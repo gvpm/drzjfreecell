@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 336" role="img" aria-label="Verso da carta">
+  <rect x="3" y="3" width="234" height="330" rx="13" fill="#fbfbfb" stroke="#080808" stroke-width="6"/>
+  <rect x="18" y="18" width="204" height="300" rx="8" fill="#134d9d"/>
+  <path d="M34 34h172v268H34z" fill="none" stroke="#f7f7f7" stroke-width="8"/>
+  <g fill="#f7f7f7" opacity="0.9">
+    <circle cx="72" cy="84" r="18"/><circle cx="120" cy="84" r="18"/><circle cx="168" cy="84" r="18"/>
+    <circle cx="72" cy="140" r="18"/><circle cx="120" cy="140" r="18"/><circle cx="168" cy="140" r="18"/>
+    <circle cx="72" cy="196" r="18"/><circle cx="120" cy="196" r="18"/><circle cx="168" cy="196" r="18"/>
+    <circle cx="72" cy="252" r="18"/><circle cx="120" cy="252" r="18"/><circle cx="168" cy="252" r="18"/>
+  </g>
+</svg>

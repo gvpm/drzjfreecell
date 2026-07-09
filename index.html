@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#007600">
+    <title>drzjFreeCell</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div>
+            <h1>drzjFreeCell</h1>
+            <p id="gameInfo">Jogo novo</p>
+          </div>
+        </div>
+
+        <div class="stats" aria-live="polite">
+          <span>Jogo <strong id="dealNumber">#</strong></span>
+          <span>Tempo <strong id="timer">00:00</strong></span>
+          <span>Cartas <strong id="cardsLeft">52</strong></span>
+          <span>Recorde <strong id="bestTime">--:--</strong></span>
+          <span>Média 5 <strong id="avgTime">--:--</strong></span>
+        </div>
+
+        <div class="quick-actions">
+          <button class="speed-btn autoplay-only" id="slowerBtn" type="button" hidden>&lt;&lt;</button>
+          <button class="quick-undo" id="quickUndoBtn" type="button">Desfazer</button>
+          <button class="speed-btn autoplay-only" id="fasterBtn" type="button" hidden>&gt;&gt;</button>
+        </div>
+
+        <details class="menu" id="menu">
+          <summary id="menuSummary">Menu</summary>
+          <div class="menu-panel">
+            <button id="newGameBtn" type="button">Novo jogo</button>
+            <button id="selectGameBtn" type="button">Selecionar jogo</button>
+            <button id="restartBtn" type="button">Reiniciar este jogo</button>
+            <button class="secret-option" id="autoplayBtn" type="button" hidden>Autoplay</button>
+            <label class="menu-row">
+              <input id="autoPromoteToggle" type="checkbox">
+              Auto-promoção
+            </label>
+            <label class="menu-row">
+              Deck
+              <select id="deckSelect">
+                <option value="traditional">Tradicional</option>
+                <option value="ju">Ju</option>
+              </select>
+            </label>
+          </div>
+        </details>
+      </header>
+
+      <main class="table" id="table" aria-label="Mesa de FreeCell">
+        <section class="top-row" aria-label="Células livres e fundações">
+          <div class="zone freecells" id="freecells" aria-label="Células livres"></div>
+          <div class="zone foundations" id="foundations" aria-label="Fundações"></div>
+        </section>
+
+        <section class="cascades" id="cascades" aria-label="Colunas do jogo"></section>
+      </main>
+
+      <div class="status-line" id="statusLine" role="status">Toque em uma carta ou sequência para mover.</div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay" hidden>
+      <div class="win-card">
+        <div class="sparkles">✦ ✧ ✦</div>
+        <h2>Vitória!</h2>
+        <p id="winText"></p>
+        <button id="winNewGameBtn" type="button">Novo jogo</button>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
