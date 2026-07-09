@@ -60,7 +60,7 @@ button,
 
 .app-shell {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr auto;
   height: 100dvh;
   min-height: 100dvh;
   background:
@@ -70,12 +70,13 @@ button,
 
 .topbar {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-row: 2;
+  grid-template-columns: auto 1fr auto auto auto;
   align-items: center;
   gap: 12px;
-  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
+  padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .quick-actions {
@@ -138,12 +139,14 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-.menu {
+.menu,
+.info-menu {
   position: relative;
   justify-self: end;
 }
 
-.menu summary {
+.menu summary,
+.info-menu summary {
   list-style: none;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -153,23 +156,39 @@ h1 {
   user-select: none;
 }
 
-.menu summary::-webkit-details-marker {
+.menu summary::-webkit-details-marker,
+.info-menu summary::-webkit-details-marker {
   display: none;
 }
 
-.menu-panel {
+.menu-panel,
+.info-panel {
   position: absolute;
   right: 0;
-  top: calc(100% + 8px);
+  bottom: calc(100% + 8px);
   z-index: 50;
   display: grid;
   gap: 8px;
-  min-width: 220px;
+  width: min(82vw, 270px);
+  max-height: min(70dvh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 12px;
   border-radius: 14px;
   background: rgba(16, 42, 16, 0.97);
   box-shadow: var(--shadow);
   border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.info-panel {
+  color: #fff;
+  min-width: 210px;
+}
+
+.info-panel span {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .menu-panel button,
@@ -197,6 +216,7 @@ h1 {
 
 .table {
   position: relative;
+  grid-row: 1;
   overflow: auto;
   padding: clamp(8px, 1.4vw, 18px) max(12px, env(safe-area-inset-right)) 18px max(12px, env(safe-area-inset-left));
   -webkit-overflow-scrolling: touch;
@@ -399,6 +419,7 @@ h1 {
 }
 
 .status-line {
+  display: none;
   padding: 7px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.2);
   color: rgba(255, 255, 255, 0.88);
@@ -458,7 +479,7 @@ h1 {
   }
 
   .topbar {
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     gap: 8px;
   }
 
@@ -473,7 +494,9 @@ h1 {
   }
 
   .quick-undo,
-  .speed-btn {
+  .speed-btn,
+  .menu summary,
+  .info-menu summary {
     padding: 7px 10px;
   }
 
@@ -492,19 +515,20 @@ h1 {
 
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
-    --card-w: clamp(44px, 7.8vw, 66px);
-    --stack-gap: clamp(13px, 4.2vh, 20px);
-    --cascade-gap: clamp(8px, 1.8vw, 14px);
+    --card-w: clamp(42px, 6.6vw, 58px);
+    --stack-gap: clamp(10px, 3.2vh, 16px);
+    --cascade-gap: clamp(7px, 1.5vw, 12px);
   }
 
   .topbar {
-    padding-top: max(5px, env(safe-area-inset-top));
-    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: max(5px, env(safe-area-inset-bottom));
   }
 
   .quick-undo,
   .speed-btn,
-  .menu summary {
+  .menu summary,
+  .info-menu summary {
     padding: 6px 10px;
   }
 
@@ -514,11 +538,22 @@ h1 {
   }
 
   .table {
+    overflow: hidden;
     padding-top: 5px;
+    padding-bottom: 6px;
+  }
+
+  .top-row {
+    margin-top: 0;
+    margin-bottom: 6px;
+  }
+
+  .cascades {
+    padding-bottom: 6px;
   }
 }
 
-@media (orientation: portrait) and (max-width: 900px) {
+@media (orientation: portrait) and (max-width: 1200px) {
   :root {
     --card-w: clamp(38px, 6.1dvh, 46px);
     --stack-gap: clamp(10px, 1.65dvh, 13px);
@@ -534,9 +569,9 @@ h1 {
   }
 
   .topbar {
-    padding-top: max(5px, env(safe-area-inset-left));
+    padding-top: 5px;
     padding-right: max(8px, env(safe-area-inset-top));
-    padding-bottom: 5px;
+    padding-bottom: max(5px, env(safe-area-inset-right));
     padding-left: max(8px, env(safe-area-inset-bottom));
   }
 

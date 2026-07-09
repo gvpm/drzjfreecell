@@ -22,6 +22,12 @@
     bestTime: document.querySelector("#bestTime"),
     avgTime: document.querySelector("#avgTime"),
     gameInfo: document.querySelector("#gameInfo"),
+    infoDeal: document.querySelector("#infoDeal"),
+    infoMoves: document.querySelector("#infoMoves"),
+    infoFinished: document.querySelector("#infoFinished"),
+    infoDifficulty: document.querySelector("#infoDifficulty"),
+    infoBest: document.querySelector("#infoBest"),
+    infoAverage: document.querySelector("#infoAverage"),
     freecells: document.querySelector("#freecells"),
     foundations: document.querySelector("#foundations"),
     cascades: document.querySelector("#cascades"),
@@ -134,6 +140,15 @@
 
   function difficultyLevel() {
     return options.difficulty || "random";
+  }
+
+  function difficultyLabel() {
+    return {
+      random: "Aleatório total",
+      level1: "Nível 1 fácil",
+      level2: "Nível 2 médio",
+      level3: "Nível 3 difícil"
+    }[difficultyLevel()] || "Aleatório total";
   }
 
   function chooseDifficultyDeal() {
@@ -504,6 +519,7 @@
   }
 
   function beginDrag(event, id) {
+    event.preventDefault();
     const source = findCard(id);
     if (!source) return;
     const cards = sourceCards(source);
@@ -523,8 +539,11 @@
       offsetY: 0,
       active: false,
       ghost: null,
+      pointerId: event.pointerId,
+      pointerOwner: event.currentTarget,
       lastTargetElement: null
     };
+    event.currentTarget?.setPointerCapture?.(event.pointerId);
   }
 
   function onPointerMove(event) {
@@ -561,6 +580,7 @@
     if (!drag) return;
     const wasActive = drag.active;
     const source = drag.source;
+    drag.pointerOwner?.releasePointerCapture?.(drag.pointerId);
     if (wasActive) {
       event.preventDefault();
       suppressClickUntil = Date.now() + 350;
@@ -1082,9 +1102,17 @@
     renderSelection();
     els.dealNumber.textContent = `#${state.dealNumber || state.seed}`;
     els.cardsLeft.textContent = String(52 - cardsInFoundations());
-    els.bestTime.textContent = stats.best ? formatTime(stats.best.seconds) : "--:--";
-    els.avgTime.textContent = averageLastFive() === null ? "--:--" : formatTime(averageLastFive());
+    const bestText = stats.best ? formatTime(stats.best.seconds) : "--:--";
+    const averageText = averageLastFive() === null ? "--:--" : formatTime(averageLastFive());
+    els.bestTime.textContent = bestText;
+    els.avgTime.textContent = averageText;
     els.gameInfo.textContent = `Jogo #${state.dealNumber || state.seed} · ${state.moves} movimentos · ${stats.gamesFinished} concluídos`;
+    els.infoDeal.textContent = `#${state.dealNumber || state.seed}`;
+    els.infoMoves.textContent = String(state.moves);
+    els.infoFinished.textContent = String(stats.gamesFinished);
+    els.infoDifficulty.textContent = difficultyLabel();
+    els.infoBest.textContent = bestText;
+    els.infoAverage.textContent = averageText;
     els.quickUndoBtn.disabled = state.history.length === 0;
     els.autoplayBtn.hidden = !options.autoplayUnlocked;
     els.autoplayBtn.textContent = autoplayRunning ? "Stop autoplay" : "Autoplay";
@@ -1096,6 +1124,17 @@
     els.difficultySelect.value = difficultyLevel();
     els.deckSelect.value = options.deck;
     updateTimer();
+  }
+
+  function renderSoon() {
+    if (drag) return;
+    window.requestAnimationFrame(() => {
+      if (drag) return;
+      render();
+      window.requestAnimationFrame(() => {
+        if (!drag) render();
+      });
+    });
   }
 
   function onCardClick(id) {
@@ -1309,13 +1348,19 @@
       render();
     });
     els.winNewGameBtn.addEventListener("click", () => startNewGame());
-    window.addEventListener("resize", render);
+    window.addEventListener("resize", renderSoon);
+    window.addEventListener("load", renderSoon, { once: true });
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(renderSoon);
+      observer.observe(els.table);
+      observer.observe(document.documentElement);
+    }
     els.table.addEventListener("contextmenu", (event) => event.preventDefault());
     els.table.addEventListener("selectstart", (event) => event.preventDefault());
     els.table.addEventListener("dragstart", (event) => event.preventDefault());
-    document.addEventListener("pointermove", onPointerMove, { passive: false });
-    document.addEventListener("pointerup", endDrag);
-    document.addEventListener("pointercancel", endDrag);
+    window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
+    window.addEventListener("pointerup", endDrag, { capture: true });
+    window.addEventListener("pointercancel", endDrag, { capture: true });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         saveGame();
@@ -1329,6 +1374,7 @@
     state = loadGame() || createGame();
     wireEvents();
     render();
+    renderSoon();
     loadDifficultyReference();
     startTimer();
   }
