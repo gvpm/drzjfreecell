@@ -18,3 +18,4 @@ FreeCell estatico para GitHub Pages, feito para desktop e celular em landscape.
 - Estrutura preparada para deck personalizado em `assets/decks/custom`.
 
 Tudo roda no navegador. Nao ha backend, login nem banco de dados.
+
