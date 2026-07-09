@@ -8,6 +8,7 @@
   const AUTOPLAY_SPEEDS = [900, 550, 300, 150, 70];
   const MICROSOFT_MAX_DEAL = 1000000;
   const MICROSOFT_SUITS = ["C", "D", "H", "S"];
+  const UNSOLVABLE_DEALS = new Set([11982, 146692, 186216, 455889, 495505, 512118, 517776, 781948]);
   const SUITS = ["S", "H", "D", "C"];
   const SUIT_NAMES = { S: "espadas", H: "copas", D: "ouros", C: "paus" };
   const SUIT_SYMBOLS = { S: "♠", H: "♥", D: "♦", C: "♣" };
@@ -51,9 +52,10 @@
   let suppressClickUntil = 0;
   let autoplayTimer = null;
   let autoplayRunning = false;
+  let autoplayPlan = [];
+  let solverTimer = null;
   let longPressTimer = null;
   let longPressTriggered = false;
-  let recentAutoplayKeys = [];
 
   function cardId(suit, rank) {
     return `${rank}${suit}`;
@@ -546,55 +548,6 @@
     return promoted;
   }
 
-  function runAutoplayPromote() {
-    let promoted = false;
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const item of topMovableCards()) {
-        if (!canMoveToFoundation(item.id)) continue;
-        const card = parseCard(item.id);
-        const freshSource = findCard(item.id);
-        if (!freshSource) continue;
-        pushHistory("autoplay-foundation");
-        removeFromSource(freshSource, 1);
-        state.foundations[card.suit] = card.rank;
-        state.moves += 1;
-        selected = null;
-        promoted = true;
-        changed = true;
-        afterChange();
-        break;
-      }
-    }
-    return promoted;
-  }
-
-  function gameKey() {
-    return [
-      state.freecells.map((card) => card || "--").join(","),
-      SUITS.map((suit) => state.foundations[suit]).join(","),
-      state.cascades.map((pile) => pile.join(".")).join("|")
-    ].join("/");
-  }
-
-  function rememberAutoplayState() {
-    recentAutoplayKeys.push(gameKey());
-    if (recentAutoplayKeys.length > 80) recentAutoplayKeys.shift();
-  }
-
-  function wouldRepeatAutoplayMove(source, target) {
-    const before = snapshot();
-    const cards = sourceCards(source);
-    const moved = removeFromSource(source, cards.length);
-    placeCards(moved, target);
-    const key = gameKey();
-    state.freecells = before.freecells;
-    state.foundations = before.foundations;
-    state.cascades = before.cascades;
-    return recentAutoplayKeys.includes(key);
-  }
-
   function sourceName(source) {
     return source.type === "freecell" ? `F${source.index + 1}` : `C${source.index + 1}`;
   }
@@ -605,73 +558,207 @@
     return `C${target.index + 1}`;
   }
 
-  function autoplayMoveScore(source, target) {
-    const cards = sourceCards(source);
+  function solverClone(board) {
+    return {
+      freecells: board.freecells.slice(),
+      foundations: { ...board.foundations },
+      cascades: board.cascades.map((pile) => pile.slice())
+    };
+  }
+
+  function solverInitialBoard() {
+    return solverClone(state);
+  }
+
+  function solverKey(board) {
+    const cells = board.freecells.map((card) => card || "--").sort().join(",");
+    const foundations = SUITS.map((suit) => board.foundations[suit]).join(",");
+    const cascades = board.cascades.map((pile) => pile.join(".")).sort().join("|");
+    return `${foundations}/${cells}/${cascades}`;
+  }
+
+  function solverWon(board) {
+    return Object.values(board.foundations).reduce((sum, value) => sum + value, 0) === 52;
+  }
+
+  function solverTopCards(board) {
+    const cards = [];
+    board.freecells.forEach((id, index) => {
+      if (id) cards.push({ id, source: { type: "freecell", index, cardIndex: 0, card: id } });
+    });
+    board.cascades.forEach((pile, index) => {
+      if (pile.length) {
+        const id = pile[pile.length - 1];
+        cards.push({ id, source: { type: "cascade", index, cardIndex: pile.length - 1, card: id } });
+      }
+    });
+    return cards;
+  }
+
+  function solverSourceCards(board, source) {
+    if (source.type === "freecell") return [board.freecells[source.index]];
+    return board.cascades[source.index].slice(source.cardIndex);
+  }
+
+  function solverMaxMovable(board, destinationCascadeIndex) {
+    const emptyFreecells = board.freecells.filter((card) => !card).length;
+    const emptyCascades = board.cascades.filter((pile, index) => pile.length === 0 && index !== destinationCascadeIndex).length;
+    return (emptyFreecells + 1) * (2 ** emptyCascades);
+  }
+
+  function solverCanCascade(board, cards, cascadeIndex) {
+    if (!cards.length || !isDescendingAlternating(cards)) return false;
+    if (cards.length > solverMaxMovable(board, cascadeIndex)) return false;
+    const pile = board.cascades[cascadeIndex];
+    if (!pile.length) return true;
+    const moving = parseCard(cards[0]);
+    const target = parseCard(pile[pile.length - 1]);
+    return target.rank === moving.rank + 1 && target.color !== moving.color;
+  }
+
+  function solverCanFoundation(board, id, suit) {
+    const card = parseCard(id);
+    return card.suit === suit && board.foundations[card.suit] === card.rank - 1;
+  }
+
+  function solverCanMove(board, source, target) {
+    const cards = solverSourceCards(board, source);
+    if (!cards[0]) return false;
+    if (target.type === "freecell") return cards.length === 1 && !board.freecells[target.index];
+    if (target.type === "foundation") return cards.length === 1 && solverCanFoundation(board, cards[0], target.suit);
+    if (source.type === "cascade" && source.index === target.index) return false;
+    return solverCanCascade(board, cards, target.index);
+  }
+
+  function solverApply(board, moveOption) {
+    const next = solverClone(board);
+    const cards = solverSourceCards(next, moveOption.source);
+    const moved = moveOption.source.type === "freecell"
+      ? [next.freecells.splice(moveOption.source.index, 1, null)[0]]
+      : next.cascades[moveOption.source.index].splice(moveOption.source.cardIndex, cards.length);
+    if (moveOption.target.type === "freecell") {
+      next.freecells[moveOption.target.index] = moved[0];
+    } else if (moveOption.target.type === "foundation") {
+      const card = parseCard(moved[0]);
+      next.foundations[card.suit] = card.rank;
+    } else {
+      next.cascades[moveOption.target.index].push(...moved);
+    }
+    return next;
+  }
+
+  function solverMoveScore(board, moveOption) {
+    const cards = solverSourceCards(board, moveOption.source);
     const moving = parseCard(cards[0]);
     let score = 0;
-
-    if (target.type === "foundation") score += 1000 + moving.rank;
-    if (source.type === "freecell") score += 80;
-    if (target.type === "cascade") {
-      const pile = state.cascades[target.index];
-      if (pile.length === 0) score += cards.length > 1 ? 70 : -30;
-      score += cards.length * 12;
-      if (moving.rank <= 4) score += 25;
+    if (moveOption.target.type === "foundation") score += 10000 + moving.rank * 20;
+    if (moveOption.source.type === "freecell") score += 600;
+    if (moveOption.source.type === "cascade" && moveOption.source.cardIndex > 0) score += 250;
+    if (moveOption.target.type === "cascade") {
+      const pile = board.cascades[moveOption.target.index];
+      score += cards.length * 80;
+      if (!pile.length) score += cards.length > 1 || moving.rank >= 11 ? 220 : -180;
     }
-    if (target.type === "freecell") {
-      score -= 45;
-      if (source.type === "cascade" && source.cardIndex < state.cascades[source.index].length - 1) score += 35;
-    }
-    if (source.type === "cascade" && source.cardIndex > 0) score += 20;
-    if (wouldRepeatAutoplayMove(source, target)) score -= 500;
+    if (moveOption.target.type === "freecell") score -= 250;
+    score += Object.values(solverApply(board, moveOption).foundations).reduce((sum, rank) => sum + rank, 0) * 5;
     return score;
   }
 
-  function legalAutoplayMoves() {
+  function solverLegalMoves(board) {
     const moves = [];
-
-    for (const item of topMovableCards()) {
+    for (const item of solverTopCards(board)) {
       const card = parseCard(item.id);
-      const foundation = { type: "foundation", suit: card.suit };
-      if (canMove(item.source, foundation)) moves.push({ source: item.source, target: foundation });
+      const target = { type: "foundation", suit: card.suit };
+      if (solverCanMove(board, item.source, target)) moves.push({ source: item.source, target });
     }
 
-    state.freecells.forEach((id, freecellIndex) => {
+    board.freecells.forEach((id, cellIndex) => {
       if (!id) return;
-      const source = { type: "freecell", index: freecellIndex, cardIndex: 0 };
-      for (let cascadeIndex = 0; cascadeIndex < state.cascades.length; cascadeIndex += 1) {
+      const source = { type: "freecell", index: cellIndex, cardIndex: 0, card: id };
+      for (let cascadeIndex = 0; cascadeIndex < 8; cascadeIndex += 1) {
         const target = { type: "cascade", index: cascadeIndex };
-        if (canMove(source, target)) moves.push({ source, target });
+        if (solverCanMove(board, source, target)) moves.push({ source, target });
       }
     });
 
-    state.cascades.forEach((pile, cascadeIndex) => {
+    board.cascades.forEach((pile, cascadeIndex) => {
       for (let cardIndex = 0; cardIndex < pile.length; cardIndex += 1) {
-        const source = { type: "cascade", index: cascadeIndex, cardIndex };
-        const cards = sourceCards(source);
+        const source = { type: "cascade", index: cascadeIndex, cardIndex, card: pile[cardIndex] };
+        const cards = solverSourceCards(board, source);
         if (!isDescendingAlternating(cards)) continue;
-        for (let targetIndex = 0; targetIndex < state.cascades.length; targetIndex += 1) {
+        for (let targetIndex = 0; targetIndex < 8; targetIndex += 1) {
           const target = { type: "cascade", index: targetIndex };
-          if (canMove(source, target)) moves.push({ source, target });
+          if (solverCanMove(board, source, target)) moves.push({ source, target });
         }
       }
-
       if (!pile.length) return;
-      const source = { type: "cascade", index: cascadeIndex, cardIndex: pile.length - 1 };
-      state.freecells.forEach((id, freecellIndex) => {
-        const target = { type: "freecell", index: freecellIndex };
-        if (!id && canMove(source, target)) moves.push({ source, target });
+      const source = { type: "cascade", index: cascadeIndex, cardIndex: pile.length - 1, card: pile[pile.length - 1] };
+      board.freecells.forEach((id, cellIndex) => {
+        const target = { type: "freecell", index: cellIndex };
+        if (!id && solverCanMove(board, source, target)) moves.push({ source, target });
       });
     });
 
-    return moves
-      .map((moveOption) => ({ ...moveOption, score: autoplayMoveScore(moveOption.source, moveOption.target) }))
-      .sort((a, b) => b.score - a.score);
+    return moves.sort((a, b) => solverMoveScore(board, b) - solverMoveScore(board, a));
   }
 
-  function chooseAutoplayMove() {
-    const moves = legalAutoplayMoves();
-    return moves.find((item) => item.score > -300) || null;
+  function resolvePlannedMove(planned) {
+    const source = planned.source.type === "freecell"
+      ? { type: "freecell", index: planned.source.index, cardIndex: 0 }
+      : findCard(planned.source.card);
+    if (!source) return null;
+    if (planned.source.type === "cascade" && source.type === "cascade") {
+      source.cardIndex = state.cascades[source.index].indexOf(planned.source.card);
+    }
+    return { source, target: planned.target };
+  }
+
+  function findAutoplayPlan(onDone) {
+    const startBoard = solverInitialBoard();
+    const visited = new Set([solverKey(startBoard)]);
+    const stack = [{ board: startBoard, moves: solverLegalMoves(startBoard), nextIndex: 0, path: [] }];
+    const maxVisited = 3000000;
+    let processed = 0;
+
+    function searchChunk() {
+      if (!autoplayRunning) return;
+      const chunkLimit = processed + 4500;
+      while (stack.length && processed < chunkLimit && visited.size < maxVisited) {
+        const frame = stack[stack.length - 1];
+        if (solverWon(frame.board)) {
+          onDone(frame.path);
+          return;
+        }
+        if (frame.nextIndex >= frame.moves.length) {
+          stack.pop();
+          continue;
+        }
+        const moveOption = frame.moves[frame.nextIndex];
+        frame.nextIndex += 1;
+        const next = solverApply(frame.board, moveOption);
+        const key = solverKey(next);
+        if (visited.has(key)) continue;
+        visited.add(key);
+        processed += 1;
+        stack.push({
+          board: next,
+          moves: solverLegalMoves(next),
+          nextIndex: 0,
+          path: frame.path.concat(moveOption)
+        });
+      }
+
+      if (visited.size >= maxVisited || !stack.length) {
+        stopAutoplay(false);
+        setStatus("Autoplay não encontrou uma solução dentro do limite local.");
+        return;
+      }
+
+      setStatus(`Autoplay calculando solução... ${visited.size.toLocaleString("pt-BR")} posições`);
+      solverTimer = setTimeout(searchChunk, 0);
+    }
+
+    searchChunk();
   }
 
   function scheduleAutoplay() {
@@ -686,42 +773,52 @@
       return;
     }
     state.autoplayUsed = true;
-    rememberAutoplayState();
 
-    if (runAutoplayPromote()) {
-      setStatus("Autoplay moveu carta para a fundação.");
-      scheduleAutoplay();
-      return;
-    }
-
-    const next = chooseAutoplayMove();
-    if (!next) {
+    const planned = autoplayPlan.shift();
+    if (!planned) {
       stopAutoplay(false);
-      setStatus("Autoplay pausado: sem movimento útil agora.");
+      setStatus("Autoplay terminou o plano antes da vitória.");
       return;
     }
 
-    if (moveWithoutAutoPromote(next.source, next.target, "autoplay")) {
-      setStatus(`Autoplay: ${sourceName(next.source)} → ${targetName(next.target)}.`);
+    const resolved = resolvePlannedMove(planned);
+    if (resolved && moveWithoutAutoPromote(resolved.source, resolved.target, "autoplay")) {
+      setStatus(`Autoplay: ${sourceName(resolved.source)} → ${targetName(resolved.target)}.`);
+    } else {
+      stopAutoplay(false);
+      setStatus("Autoplay pausado: o plano mudou após jogadas manuais.");
+      return;
     }
     scheduleAutoplay();
   }
 
   function startAutoplay() {
     if (state.won) return;
+    if (UNSOLVABLE_DEALS.has(state.dealNumber || state.seed)) {
+      setStatus(`Jogo #${state.dealNumber || state.seed} é conhecido como impossível.`);
+      return;
+    }
     autoplayRunning = true;
     state.autoplayUsed = true;
-    recentAutoplayKeys = [];
+    autoplayPlan = [];
     saveGame();
     render();
-    setStatus("Autoplay iniciado.");
-    scheduleAutoplay();
+    setStatus("Autoplay calculando solução...");
+    findAutoplayPlan((plan) => {
+      if (!autoplayRunning) return;
+      autoplayPlan = plan;
+      setStatus(`Autoplay iniciou plano com ${plan.length} movimentos.`);
+      scheduleAutoplay();
+    });
   }
 
   function stopAutoplay(showMessage = true) {
     autoplayRunning = false;
     clearTimeout(autoplayTimer);
+    clearTimeout(solverTimer);
     autoplayTimer = null;
+    solverTimer = null;
+    autoplayPlan = [];
     render();
     if (showMessage) setStatus("Autoplay parado. Você pode continuar manualmente.");
   }
