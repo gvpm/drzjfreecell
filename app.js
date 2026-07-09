@@ -518,7 +518,7 @@
     updateDragGhost(clientX, clientY);
   }
 
-  function beginDrag(event, id, point = event) {
+  function beginDrag(event, id, point = event, owner = event.currentTarget) {
     if (drag) return;
     const source = findCard(id);
     if (!source) return;
@@ -542,15 +542,49 @@
       active: false,
       ghost: null,
       pointerId: event.pointerId,
-      pointerOwner: event.currentTarget,
+      pointerOwner: owner,
       lastTargetElement: null
     };
     try {
-      event.currentTarget?.setPointerCapture?.(event.pointerId);
+      owner?.setPointerCapture?.(event.pointerId);
     } catch {
       // Pointer capture is a convenience; mouse/touch fallbacks keep drag working without it.
     }
+    drag.active = true;
+    selected = drag.source;
+    renderSelection();
+    sourceCards(drag.source).forEach((cardIdValue) => {
+      document.querySelector(`.card[data-card="${CSS.escape(cardIdValue)}"]`)?.classList.add("dragging");
+    });
+    createDragGhost(drag.source, owner, point.clientX, point.clientY);
     event.preventDefault();
+  }
+
+  function cardFromEvent(event) {
+    const card = event.target?.closest?.(".card[data-card]");
+    if (!card || !els.table.contains(card)) return null;
+    return card;
+  }
+
+  function onDragPointerStart(event) {
+    if (event.button !== undefined && event.button !== 0) return;
+    const card = cardFromEvent(event);
+    if (!card) return;
+    beginDrag(event, card.dataset.card, event, card);
+  }
+
+  function onDragMouseStart(event) {
+    if (event.button !== 0) return;
+    const card = cardFromEvent(event);
+    if (!card) return;
+    beginDrag(event, card.dataset.card, event, card);
+  }
+
+  function onDragTouchStart(event) {
+    const card = cardFromEvent(event);
+    const point = pointFromTouch(event);
+    if (!card || !point) return;
+    beginDrag(event, card.dataset.card, point, card);
   }
 
   function continueDrag(point, originalEvent) {
@@ -615,11 +649,23 @@
     }
     if (wasActive) {
       event.preventDefault();
-      suppressClickUntil = Date.now() + 350;
-      drag.ghost.hidden = true;
       const point = pointFromTouch(event) || event;
       const x = Number.isFinite(point.clientX) ? point.clientX : drag.currentX;
       const y = Number.isFinite(point.clientY) ? point.clientY : drag.currentY;
+      const distance = Math.hypot(x - drag.startX, y - drag.startY);
+      if (distance < 8) {
+        drag.ghost?.remove();
+        clearDropReady();
+        document.querySelectorAll(".dragging").forEach((node) => node.classList.remove("dragging"));
+        selected = null;
+        renderSelection();
+        const clickedId = drag.id;
+        drag = null;
+        onCardClick(clickedId);
+        return;
+      }
+      suppressClickUntil = Date.now() + 350;
+      drag.ghost.hidden = true;
       const element = document.elementFromPoint(x, y);
       const target = targetFromElement(element);
       drag.ghost.remove();
@@ -1036,18 +1082,6 @@
       if (Date.now() < suppressClickUntil) return;
       onCardClick(id);
     });
-    button.addEventListener("pointerdown", (event) => {
-      if (event.button !== undefined && event.button !== 0) return;
-      beginDrag(event, id);
-    });
-    button.addEventListener("mousedown", (event) => {
-      if (event.button !== 0) return;
-      beginDrag(event, id);
-    });
-    button.addEventListener("touchstart", (event) => {
-      const point = pointFromTouch(event);
-      if (point) beginDrag(event, id, point);
-    }, { passive: false });
     return button;
   }
 
@@ -1401,6 +1435,9 @@
     els.table.addEventListener("contextmenu", (event) => event.preventDefault());
     els.table.addEventListener("selectstart", (event) => event.preventDefault());
     els.table.addEventListener("dragstart", (event) => event.preventDefault());
+    els.table.addEventListener("pointerdown", onDragPointerStart, { capture: true, passive: false });
+    els.table.addEventListener("mousedown", onDragMouseStart, { capture: true, passive: false });
+    els.table.addEventListener("touchstart", onDragTouchStart, { capture: true, passive: false });
     window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
     window.addEventListener("pointerup", endDrag, { capture: true });
     window.addEventListener("pointercancel", endDrag, { capture: true });
