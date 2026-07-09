@@ -518,8 +518,8 @@
     updateDragGhost(clientX, clientY);
   }
 
-  function beginDrag(event, id) {
-    event.preventDefault();
+  function beginDrag(event, id, point = event) {
+    if (drag) return;
     const source = findCard(id);
     if (!source) return;
     const cards = sourceCards(source);
@@ -533,8 +533,10 @@
     drag = {
       id,
       source,
-      startX: event.clientX,
-      startY: event.clientY,
+      startX: point.clientX,
+      startY: point.clientY,
+      currentX: point.clientX,
+      currentY: point.clientY,
       offsetX: 0,
       offsetY: 0,
       active: false,
@@ -543,12 +545,19 @@
       pointerOwner: event.currentTarget,
       lastTargetElement: null
     };
-    event.currentTarget?.setPointerCapture?.(event.pointerId);
+    try {
+      event.currentTarget?.setPointerCapture?.(event.pointerId);
+    } catch {
+      // Pointer capture is a convenience; mouse/touch fallbacks keep drag working without it.
+    }
+    event.preventDefault();
   }
 
-  function onPointerMove(event) {
+  function continueDrag(point, originalEvent) {
     if (!drag) return;
-    const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+    drag.currentX = point.clientX;
+    drag.currentY = point.clientY;
+    const distance = Math.hypot(point.clientX - drag.startX, point.clientY - drag.startY);
     if (!drag.active && distance > 8) {
       const originCard = document.querySelector(`.card[data-card="${CSS.escape(drag.id)}"]`);
       if (!originCard) return;
@@ -558,15 +567,15 @@
       sourceCards(drag.source).forEach((id) => {
         document.querySelector(`.card[data-card="${CSS.escape(id)}"]`)?.classList.add("dragging");
       });
-      createDragGhost(drag.source, originCard, event.clientX, event.clientY);
+      createDragGhost(drag.source, originCard, point.clientX, point.clientY);
       setStatus("Arraste ate o destino.");
     }
 
     if (!drag.active) return;
-    event.preventDefault();
-    updateDragGhost(event.clientX, event.clientY);
+    originalEvent.preventDefault();
+    updateDragGhost(point.clientX, point.clientY);
     drag.ghost.hidden = true;
-    const element = document.elementFromPoint(event.clientX, event.clientY);
+    const element = document.elementFromPoint(point.clientX, point.clientY);
     drag.ghost.hidden = false;
     const targetElement = element?.closest?.("[data-target-type]");
     if (targetElement !== drag.lastTargetElement) {
@@ -576,16 +585,42 @@
     }
   }
 
+  function pointFromTouch(event) {
+    const touch = event.touches?.[0] || event.changedTouches?.[0];
+    return touch ? { clientX: touch.clientX, clientY: touch.clientY } : null;
+  }
+
+  function onPointerMove(event) {
+    continueDrag(event, event);
+  }
+
+  function onMouseMove(event) {
+    if (!drag) return;
+    continueDrag(event, event);
+  }
+
+  function onTouchMove(event) {
+    const point = pointFromTouch(event);
+    if (point) continueDrag(point, event);
+  }
+
   function endDrag(event) {
     if (!drag) return;
     const wasActive = drag.active;
     const source = drag.source;
-    drag.pointerOwner?.releasePointerCapture?.(drag.pointerId);
+    try {
+      drag.pointerOwner?.releasePointerCapture?.(drag.pointerId);
+    } catch {
+      // Capture may already be gone if the browser cancelled the pointer.
+    }
     if (wasActive) {
       event.preventDefault();
       suppressClickUntil = Date.now() + 350;
       drag.ghost.hidden = true;
-      const element = document.elementFromPoint(event.clientX, event.clientY);
+      const point = pointFromTouch(event) || event;
+      const x = Number.isFinite(point.clientX) ? point.clientX : drag.currentX;
+      const y = Number.isFinite(point.clientY) ? point.clientY : drag.currentY;
+      const element = document.elementFromPoint(x, y);
       const target = targetFromElement(element);
       drag.ghost.remove();
       clearDropReady();
@@ -1005,6 +1040,14 @@
       if (event.button !== undefined && event.button !== 0) return;
       beginDrag(event, id);
     });
+    button.addEventListener("mousedown", (event) => {
+      if (event.button !== 0) return;
+      beginDrag(event, id);
+    });
+    button.addEventListener("touchstart", (event) => {
+      const point = pointFromTouch(event);
+      if (point) beginDrag(event, id, point);
+    }, { passive: false });
     return button;
   }
 
@@ -1361,6 +1404,11 @@
     window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
     window.addEventListener("pointerup", endDrag, { capture: true });
     window.addEventListener("pointercancel", endDrag, { capture: true });
+    window.addEventListener("mousemove", onMouseMove, { capture: true, passive: false });
+    window.addEventListener("mouseup", endDrag, { capture: true });
+    window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
+    window.addEventListener("touchend", endDrag, { capture: true, passive: false });
+    window.addEventListener("touchcancel", endDrag, { capture: true, passive: false });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         saveGame();
