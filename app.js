@@ -35,6 +35,7 @@
     selectGameBtn: document.querySelector("#selectGameBtn"),
     restartBtn: document.querySelector("#restartBtn"),
     autoPromoteToggle: document.querySelector("#autoPromoteToggle"),
+    difficultySelect: document.querySelector("#difficultySelect"),
     deckSelect: document.querySelector("#deckSelect"),
     winOverlay: document.querySelector("#winOverlay"),
     winText: document.querySelector("#winText"),
@@ -56,6 +57,7 @@
   let solverTimer = null;
   let longPressTimer = null;
   let longPressTriggered = false;
+  let difficultyReference = null;
 
   function cardId(suit, rank) {
     return `${rank}${suit}`;
@@ -126,6 +128,42 @@
     return Math.floor(Math.random() * MICROSOFT_MAX_DEAL) + 1;
   }
 
+  function randomFromList(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function difficultyLevel() {
+    return options.difficulty || "random";
+  }
+
+  function chooseDifficultyDeal() {
+    const level = difficultyLevel();
+    if (level === "random" || !difficultyReference?.levels) return randomDealNumber();
+
+    const entry = difficultyReference.levels[level];
+    if (!entry) return randomDealNumber();
+
+    if (Array.isArray(entry.deals) && entry.deals.length) {
+      const allowed = entry.deals.filter((deal) => !UNSOLVABLE_DEALS.has(deal));
+      return randomFromList(allowed.length ? allowed : entry.deals);
+    }
+
+    if (Array.isArray(entry.ranges) && entry.ranges.length) {
+      const excluded = new Set(entry.exclude || []);
+      (entry.excludeFromLevels || []).forEach((levelName) => {
+        const levelEntry = difficultyReference.levels[levelName];
+        (levelEntry?.deals || []).forEach((deal) => excluded.add(deal));
+      });
+      for (let attempt = 0; attempt < 400; attempt += 1) {
+        const range = randomFromList(entry.ranges);
+        const deal = Math.floor(Math.random() * (range.to - range.from + 1)) + range.from;
+        if (!excluded.has(deal) && !UNSOLVABLE_DEALS.has(deal)) return deal;
+      }
+    }
+
+    return randomDealNumber();
+  }
+
   function normalizeDealNumber(value) {
     const number = Number.parseInt(String(value).replace(/[^\d-]/g, ""), 10);
     if (!Number.isFinite(number)) return null;
@@ -133,7 +171,7 @@
     return number;
   }
 
-  function createGame(dealNumber = randomDealNumber(), gameNumber = nextGameNumber()) {
+  function createGame(dealNumber = chooseDifficultyDeal(), gameNumber = nextGameNumber()) {
     const cascades = Array.from({ length: 8 }, () => []);
     const normalizedDeal = normalizeDealNumber(dealNumber) || randomDealNumber();
     const deck = microsoftDeal(normalizedDeal);
@@ -174,13 +212,14 @@
 
   function loadOptions() {
     try {
-      const loaded = { autoPromote: true, deck: "traditional", autoplayUnlocked: false, autoplaySpeed: 2, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) || "{}") };
+      const loaded = { autoPromote: true, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) || "{}") };
       if (!["traditional", "ju"].includes(loaded.deck)) loaded.deck = "traditional";
+      if (!["random", "level1", "level2", "level3"].includes(loaded.difficulty)) loaded.difficulty = "random";
       if (!Number.isInteger(loaded.autoplaySpeed)) loaded.autoplaySpeed = 2;
       loaded.autoplaySpeed = Math.max(0, Math.min(AUTOPLAY_SPEEDS.length - 1, loaded.autoplaySpeed));
       return loaded;
     } catch {
-      return { autoPromote: true, deck: "traditional", autoplayUnlocked: false, autoplaySpeed: 2 };
+      return { autoPromote: true, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2 };
     }
   }
 
@@ -215,15 +254,45 @@
     localStorage.setItem(BEST_KEY, JSON.stringify(stats.best));
   }
 
+  function isValidGameState(game) {
+    if (!game || !Array.isArray(game.cascades) || game.cascades.length !== 8) return false;
+    if (!Array.isArray(game.freecells) || game.freecells.length !== 4) return false;
+    if (!game.foundations || typeof game.foundations !== "object") return false;
+
+    const visibleCards = [];
+    game.cascades.forEach((pile) => {
+      if (!Array.isArray(pile)) return;
+      visibleCards.push(...pile);
+    });
+    visibleCards.push(...game.freecells.filter(Boolean));
+
+    const uniqueVisible = new Set(visibleCards);
+    if (uniqueVisible.size !== visibleCards.length) return false;
+    if (!visibleCards.every((id) => /^[1-9][0-3]?[SHDC]$/.test(id))) return false;
+
+    const foundationCount = SUITS.reduce((sum, suit) => {
+      const rank = Number(game.foundations[suit] || 0);
+      return sum + Math.max(0, Math.min(13, rank));
+    }, 0);
+
+    return visibleCards.length + foundationCount === 52;
+  }
+
   function loadGame() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const loaded = JSON.parse(raw);
-      if (!loaded || !Array.isArray(loaded.cascades) || loaded.cascades.length !== 8) return null;
+      if (!isValidGameState(loaded)) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
       if (!loaded.gameNumber) loaded.gameNumber = Math.max(1, stats.gamesStarted || 1);
       if (!loaded.dealNumber) loaded.dealNumber = normalizeDealNumber(loaded.seed) || loaded.gameNumber;
       loaded.seed = loaded.dealNumber;
+      if (!Array.isArray(loaded.history)) loaded.history = [];
+      if (!Number.isFinite(loaded.startedAt)) loaded.startedAt = Date.now();
+      if (!Number.isFinite(loaded.elapsedBeforePause)) loaded.elapsedBeforePause = 0;
       if (typeof loaded.autoplayUsed !== "boolean") loaded.autoplayUsed = false;
       return loaded;
     } catch {
@@ -1024,6 +1093,7 @@
     els.slowerBtn.disabled = options.autoplaySpeed === 0;
     els.fasterBtn.disabled = options.autoplaySpeed === AUTOPLAY_SPEEDS.length - 1;
     els.autoPromoteToggle.checked = options.autoPromote;
+    els.difficultySelect.value = difficultyLevel();
     els.deckSelect.value = options.deck;
     updateTimer();
   }
@@ -1156,6 +1226,19 @@
     startNewGame(state.dealNumber || state.seed, state.gameNumber);
   }
 
+  async function loadDifficultyReference() {
+    try {
+      const response = await fetch("assets/freecell-difficulty.json", { cache: "no-cache" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      difficultyReference = await response.json();
+    } catch {
+      difficultyReference = null;
+      if (difficultyLevel() !== "random") {
+        setStatus("Lista de dificuldade não carregou; novo jogo usará aleatório total.");
+      }
+    }
+  }
+
   function selectGameByPrompt() {
     const current = state.dealNumber || state.seed || 1;
     const answer = window.prompt(`Digite o número do jogo (1-${MICROSOFT_MAX_DEAL}):`, String(current));
@@ -1214,6 +1297,12 @@
         setStatus("Auto-promoção aplicada.");
       }
     });
+    els.difficultySelect.addEventListener("change", () => {
+      options.difficulty = els.difficultySelect.value;
+      saveOptions();
+      const label = els.difficultySelect.selectedOptions[0]?.textContent || "Aleatório total";
+      setStatus(`Novo jogo usará: ${label}.`);
+    });
     els.deckSelect.addEventListener("change", () => {
       options.deck = els.deckSelect.value;
       saveOptions();
@@ -1240,6 +1329,7 @@
     state = loadGame() || createGame();
     wireEvents();
     render();
+    loadDifficultyReference();
     startTimer();
   }
 

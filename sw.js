@@ -1,10 +1,11 @@
-const CACHE_NAME = "drzj-freecell-v1";
+const CACHE_NAME = "drzj-freecell-v3";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
+  "./assets/freecell-difficulty.json",
   "./assets/icon.svg"
 ];
 
