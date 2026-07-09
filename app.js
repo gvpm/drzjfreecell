@@ -1221,6 +1221,9 @@
     });
     els.winNewGameBtn.addEventListener("click", () => startNewGame());
     window.addEventListener("resize", render);
+    els.table.addEventListener("contextmenu", (event) => event.preventDefault());
+    els.table.addEventListener("selectstart", (event) => event.preventDefault());
+    els.table.addEventListener("dragstart", (event) => event.preventDefault());
     document.addEventListener("pointermove", onPointerMove, { passive: false });
     document.addEventListener("pointerup", endDrag);
     document.addEventListener("pointercancel", endDrag);

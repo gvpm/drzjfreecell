@@ -1,0 +1,19 @@
+{
+  "name": "drzjFreeCell",
+  "short_name": "FreeCell",
+  "description": "FreeCell leve e offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#006d00",
+  "theme_color": "#007600",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
