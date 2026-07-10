@@ -35,18 +35,18 @@ function pipPositions(rank) {
 function corner(rank, suit, rotate = false) {
   const transform = rotate ? "translate(240 336) rotate(180)" : "";
   const rankLabel = ranks[rank];
-  const suitX = rankLabel === "10" ? 54 : 39;
+  const suitX = rankLabel === "10" ? 60 : 43;
   return `<g transform="${transform}">
-    <text x="14" y="39" font-family="Arial, Helvetica, sans-serif" font-size="${rankLabel === "10" ? 31 : 34}" font-weight="900" fill="${suit.color}">${rankLabel}</text>
-    <text x="${suitX}" y="39" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
+    <text x="12" y="42" font-family="Arial, Helvetica, sans-serif" font-size="${rankLabel === "10" ? 36 : 39}" font-weight="900" fill="${suit.color}">${rankLabel}</text>
+    <text x="${suitX}" y="42" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
   </g>`;
 }
 
 function face(rank, suit) {
   const title = rank === 11 ? "J" : rank === 12 ? "Q" : "K";
   return `<g transform="translate(120 170)">
-    <text x="0" y="12" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="900" fill="${suit.color}">${title}</text>
-    <text x="0" y="76" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
+    <text x="0" y="14" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="88" font-weight="900" fill="${suit.color}">${title}</text>
+    <text x="0" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
   </g>`;
 }
 
@@ -66,7 +66,7 @@ function cardBackground(deck) {
 function cardSvg(rank, suitCode, deck = "traditional") {
   const suit = suits[suitCode];
   const pips = rank <= 10
-    ? pipPositions(rank).map(([x, y, dir]) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${rank === 1 ? 92 : 44}" font-weight="900" fill="${suit.color}" transform="rotate(${dir < 0 ? 180 : 0} ${x} ${y})">${suit.symbol}</text>`).join("\n")
+    ? pipPositions(rank).map(([x, y, dir]) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${rank === 1 ? 106 : 52}" font-weight="900" fill="${suit.color}" transform="rotate(${dir < 0 ? 180 : 0} ${x} ${y})">${suit.symbol}</text>`).join("\n")
     : face(rank, suit);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 336" role="img" aria-label="${ranks[rank]} ${suit.symbol}">

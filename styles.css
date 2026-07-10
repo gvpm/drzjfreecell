@@ -513,7 +513,7 @@ h1 {
 @media (max-width: 900px) {
   :root {
     --card-w: clamp(46px, 12.4vw, 70px);
-    --stack-gap: clamp(14px, 3vw, 18px);
+    --stack-gap: clamp(10px, 2.35vw, 14px);
     --cascade-gap: clamp(4px, 1.05vw, 8px);
   }
 
@@ -555,7 +555,7 @@ h1 {
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
     --card-w: clamp(58px, 8.7vw, 82px);
-    --stack-gap: clamp(13px, 3.2vh, 17px);
+    --stack-gap: clamp(9px, 2.45vh, 13px);
     --cascade-gap: clamp(2px, 0.5vw, 5px);
   }
 
@@ -595,7 +595,7 @@ h1 {
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
     --card-w: clamp(62px, 8.45dvh, 78px);
-    --stack-gap: clamp(13px, 1.9dvh, 17px);
+    --stack-gap: clamp(9px, 1.35dvh, 13px);
     --cascade-gap: clamp(2px, 0.44dvh, 4px);
   }
 

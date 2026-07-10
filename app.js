@@ -1084,7 +1084,7 @@
 
   function cardAsset(id) {
     const card = parseCard(id);
-    return `assets/decks/${options.deck}/${card.rank}${card.suit}.svg?v=14`;
+    return `assets/decks/${options.deck}/${card.rank}${card.suit}.svg?v=19`;
   }
 
   function createCardButton(id, source, top) {
