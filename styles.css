@@ -2,11 +2,11 @@
   --felt: #008000;
   --felt-dark: #006d00;
   --felt-light: #11ad11;
-  --card-w: clamp(52px, 9.8vw, 118px);
+  --card-w: clamp(58px, 10.6vw, 132px);
   --card-h: calc(var(--card-w) * 1.4);
-  --stack-gap: clamp(17px, 3.7vw, 35px);
-  --top-gap: clamp(5px, 0.9vw, 11px);
-  --cascade-gap: clamp(10px, 2.6vw, 34px);
+  --stack-gap: clamp(15px, 2.9vw, 30px);
+  --top-gap: clamp(4px, 0.7vw, 9px);
+  --cascade-gap: clamp(6px, 1.6vw, 22px);
   --board-w: calc((var(--card-w) * 8) + (var(--cascade-gap) * 7));
   --black: #111;
   --red: #e61818;
@@ -38,6 +38,29 @@ body {
   position: fixed;
   inset: 0;
   width: 100%;
+}
+
+body.night-mode {
+  --felt: #050505;
+  --felt-dark: #000;
+  --felt-light: #2b2b2b;
+  --red: #ff7777;
+}
+
+body.night-mode .app-shell {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04), transparent 42%),
+    linear-gradient(135deg, #070707, #000);
+}
+
+body.night-mode .card img {
+  filter: invert(0.88) hue-rotate(180deg) saturate(0.65) brightness(0.9);
+}
+
+body.night-mode .card-fallback {
+  background: #202020;
+  border-color: #777;
+  color: #ddd;
 }
 
 button,
@@ -73,8 +96,8 @@ button,
   grid-row: 2;
   grid-template-columns: auto 1fr auto auto auto;
   align-items: center;
-  gap: 12px;
-  padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  gap: 8px;
+  padding: 5px max(8px, env(safe-area-inset-right)) max(5px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
@@ -82,14 +105,14 @@ button,
 .quick-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .quick-undo,
 .speed-btn {
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 6px 11px;
   color: #102010;
   background: #f7f7f2;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
@@ -151,7 +174,7 @@ h1 {
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 6px 11px;
   background: rgba(255, 255, 255, 0.1);
   user-select: none;
 }
@@ -168,13 +191,13 @@ h1 {
   bottom: calc(100% + 8px);
   z-index: 50;
   display: grid;
-  gap: 8px;
-  width: min(82vw, 270px);
-  max-height: min(70dvh, 420px);
+  gap: 5px;
+  width: min(76vw, 230px);
+  max-height: min(64dvh, 360px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 12px;
-  border-radius: 14px;
+  padding: 8px;
+  border-radius: 12px;
   background: rgba(16, 42, 16, 0.97);
   box-shadow: var(--shadow);
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -195,8 +218,8 @@ h1 {
 .menu-panel select {
   width: 100%;
   border: 0;
-  border-radius: 10px;
-  padding: 9px 10px;
+  border-radius: 8px;
+  padding: 6px 8px;
   background: #f7f7f2;
   color: #102010;
   cursor: pointer;
@@ -206,8 +229,9 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 7px 2px;
+  gap: 8px;
+  padding: 4px 2px;
+  font-size: 0.9rem;
 }
 
 .secret-option {
@@ -218,7 +242,7 @@ h1 {
   position: relative;
   grid-row: 1;
   overflow: auto;
-  padding: clamp(8px, 1.4vw, 18px) max(12px, env(safe-area-inset-right)) 18px max(12px, env(safe-area-inset-left));
+  padding: clamp(4px, 0.9vw, 12px) max(6px, env(safe-area-inset-right)) 8px max(6px, env(safe-area-inset-left));
   -webkit-overflow-scrolling: touch;
 }
 
@@ -231,7 +255,7 @@ h1 {
   width: var(--board-w);
   min-width: var(--board-w);
   max-width: 1120px;
-  margin: clamp(4px, 1.2vh, 16px) auto clamp(18px, 4vh, 42px);
+  margin: clamp(2px, 0.8vh, 10px) auto clamp(8px, 1.8vh, 20px);
 }
 
 .zone {
@@ -473,9 +497,9 @@ h1 {
 
 @media (max-width: 900px) {
   :root {
-    --card-w: clamp(42px, 11.6vw, 62px);
-    --stack-gap: clamp(14px, 4vw, 23px);
-    --cascade-gap: clamp(7px, 1.6vw, 12px);
+    --card-w: clamp(46px, 12.4vw, 70px);
+    --stack-gap: clamp(11px, 3.1vw, 18px);
+    --cascade-gap: clamp(4px, 1.05vw, 8px);
   }
 
   .topbar {
@@ -515,9 +539,9 @@ h1 {
 
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
-    --card-w: clamp(42px, 6.6vw, 58px);
-    --stack-gap: clamp(10px, 3.2vh, 16px);
-    --cascade-gap: clamp(7px, 1.5vw, 12px);
+    --card-w: clamp(48px, 7.4vw, 68px);
+    --stack-gap: clamp(9px, 2.65vh, 13px);
+    --cascade-gap: clamp(4px, 0.85vw, 7px);
   }
 
   .topbar {
@@ -555,9 +579,9 @@ h1 {
 
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
-    --card-w: clamp(38px, 6.1dvh, 46px);
-    --stack-gap: clamp(10px, 1.65dvh, 13px);
-    --cascade-gap: clamp(6px, 1.1dvh, 8px);
+    --card-w: clamp(50px, 8.2dvh, 64px);
+    --stack-gap: clamp(7px, 1.1dvh, 10px);
+    --cascade-gap: clamp(2px, 0.45dvh, 4px);
   }
 
   .app-shell {

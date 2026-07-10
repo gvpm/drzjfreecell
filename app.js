@@ -41,6 +41,7 @@
     selectGameBtn: document.querySelector("#selectGameBtn"),
     restartBtn: document.querySelector("#restartBtn"),
     autoPromoteToggle: document.querySelector("#autoPromoteToggle"),
+    nightModeToggle: document.querySelector("#nightModeToggle"),
     difficultySelect: document.querySelector("#difficultySelect"),
     deckSelect: document.querySelector("#deckSelect"),
     winOverlay: document.querySelector("#winOverlay"),
@@ -227,14 +228,14 @@
 
   function loadOptions() {
     try {
-      const loaded = { autoPromote: true, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) || "{}") };
+      const loaded = { autoPromote: true, nightMode: false, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) || "{}") };
       if (!["traditional", "ju"].includes(loaded.deck)) loaded.deck = "traditional";
       if (!["random", "level1", "level2", "level3"].includes(loaded.difficulty)) loaded.difficulty = "random";
       if (!Number.isInteger(loaded.autoplaySpeed)) loaded.autoplaySpeed = 2;
       loaded.autoplaySpeed = Math.max(0, Math.min(AUTOPLAY_SPEEDS.length - 1, loaded.autoplaySpeed));
       return loaded;
     } catch {
-      return { autoPromote: true, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2 };
+      return { autoPromote: true, nightMode: false, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2 };
     }
   }
 
@@ -562,8 +563,7 @@
 
   function cardFromEvent(event) {
     const card = event.target?.closest?.(".card[data-card]");
-    if (!card || !els.table.contains(card)) return null;
-    return card;
+    return card || null;
   }
 
   function onDragPointerStart(event) {
@@ -1198,6 +1198,8 @@
     els.slowerBtn.disabled = options.autoplaySpeed === 0;
     els.fasterBtn.disabled = options.autoplaySpeed === AUTOPLAY_SPEEDS.length - 1;
     els.autoPromoteToggle.checked = options.autoPromote;
+    els.nightModeToggle.checked = !!options.nightMode;
+    document.body.classList.toggle("night-mode", !!options.nightMode);
     els.difficultySelect.value = difficultyLevel();
     els.deckSelect.value = options.deck;
     updateTimer();
@@ -1413,6 +1415,11 @@
         setStatus("Auto-promoção aplicada.");
       }
     });
+    els.nightModeToggle.addEventListener("change", () => {
+      options.nightMode = els.nightModeToggle.checked;
+      saveOptions();
+      render();
+    });
     els.difficultySelect.addEventListener("change", () => {
       options.difficulty = els.difficultySelect.value;
       saveOptions();
@@ -1435,9 +1442,9 @@
     els.table.addEventListener("contextmenu", (event) => event.preventDefault());
     els.table.addEventListener("selectstart", (event) => event.preventDefault());
     els.table.addEventListener("dragstart", (event) => event.preventDefault());
-    els.table.addEventListener("pointerdown", onDragPointerStart, { capture: true, passive: false });
-    els.table.addEventListener("mousedown", onDragMouseStart, { capture: true, passive: false });
-    els.table.addEventListener("touchstart", onDragTouchStart, { capture: true, passive: false });
+    document.addEventListener("pointerdown", onDragPointerStart, { capture: true, passive: false });
+    document.addEventListener("mousedown", onDragMouseStart, { capture: true, passive: false });
+    document.addEventListener("touchstart", onDragTouchStart, { capture: true, passive: false });
     window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
     window.addEventListener("pointerup", endDrag, { capture: true });
     window.addEventListener("pointercancel", endDrag, { capture: true });
