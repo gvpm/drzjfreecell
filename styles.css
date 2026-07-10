@@ -512,7 +512,7 @@ h1 {
 @media (max-width: 900px) {
   :root {
     --card-w: clamp(46px, 12.4vw, 70px);
-    --stack-gap: clamp(11px, 3.1vw, 18px);
+    --stack-gap: clamp(8px, 2.2vw, 13px);
     --cascade-gap: clamp(4px, 1.05vw, 8px);
   }
 
@@ -554,7 +554,7 @@ h1 {
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
     --card-w: clamp(58px, 8.7vw, 82px);
-    --stack-gap: clamp(7px, 2.05vh, 10px);
+    --stack-gap: clamp(4px, 1.25vh, 7px);
     --cascade-gap: clamp(2px, 0.5vw, 5px);
   }
 
@@ -594,7 +594,7 @@ h1 {
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
     --card-w: clamp(62px, 8.45dvh, 78px);
-    --stack-gap: clamp(4px, 0.54dvh, 6px);
+    --stack-gap: clamp(2px, 0.32dvh, 3px);
     --cascade-gap: clamp(2px, 0.44dvh, 4px);
   }
 
@@ -607,11 +607,24 @@ h1 {
   }
 
   .topbar {
-    padding-top: 5px;
-    padding-right: max(8px, env(safe-area-inset-top));
-    padding-bottom: max(5px, env(safe-area-inset-right));
-    padding-left: max(8px, env(safe-area-inset-bottom));
+    gap: 5px;
+    padding-top: 3px;
+    padding-right: max(5px, env(safe-area-inset-top));
+    padding-bottom: max(3px, env(safe-area-inset-right));
+    padding-left: max(5px, env(safe-area-inset-bottom));
     background: rgba(0, 0, 0, 0.1);
+  }
+
+  .stats {
+    gap: 7px;
+    font-size: clamp(0.76rem, 1.65dvh, 0.92rem);
+  }
+
+  .quick-undo,
+  .speed-btn,
+  .menu summary,
+  .info-menu summary {
+    padding: 5px 8px;
   }
 
   .stats {

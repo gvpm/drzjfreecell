@@ -6,6 +6,7 @@
   const BEST_KEY = "drzj-freecell-best-v1";
   const STATS_KEY = "drzj-freecell-stats-v1";
   const AUTOPLAY_SPEEDS = [900, 550, 300, 150, 70];
+  const AUTO_PROMOTE_DELAY = 360;
   const MICROSOFT_MAX_DEAL = 1000000;
   const MICROSOFT_SUITS = ["C", "D", "H", "S"];
   const UNSOLVABLE_DEALS = new Set([11982, 146692, 186216, 455889, 495505, 512118, 517776, 781948]);
@@ -63,6 +64,7 @@
   let autoplayRunning = false;
   let autoplayPlan = [];
   let solverTimer = null;
+  let autoPromoteTimer = null;
   let longPressTimer = null;
   let longPressTriggered = false;
   let difficultyReference = null;
@@ -456,6 +458,7 @@
 
   function move(source, target, label = "move", recordHistory = true) {
     if (!canMove(source, target)) return false;
+    cancelAutoPromote();
     const cards = sourceCards(source);
     if (recordHistory) pushHistory(label);
     const moved = removeFromSource(source, cards.length);
@@ -528,7 +531,6 @@
 
   function beginDrag(event, id, point = event, owner = event.currentTarget) {
     if (drag) return;
-    if (event.cancelable) event.preventDefault();
     const source = findCard(id);
     if (!source) return;
     const cards = sourceCards(source);
@@ -536,6 +538,10 @@
     if (source.type === "cascade" && clickedIndex > 0) {
       source.cardIndex += clickedIndex;
     }
+    if (source.type === "cascade" && !isDescendingAlternating(sourceCards(source))) {
+      return;
+    }
+    if (event.cancelable) event.preventDefault();
     drag = {
       id,
       source,
@@ -691,29 +697,46 @@
     return cards;
   }
 
+  function cancelAutoPromote() {
+    clearTimeout(autoPromoteTimer);
+    autoPromoteTimer = null;
+  }
+
+  function nextAutoPromote() {
+    for (const item of topMovableCards()) {
+      if (!canAutoPromote(item.id)) continue;
+      const freshSource = findCard(item.id);
+      if (!freshSource) continue;
+      return { id: item.id, card: parseCard(item.id), source: freshSource };
+    }
+    return null;
+  }
+
   function runAutoPromote(createHistory = true) {
-    let promoted = false;
-    let changed = true;
+    cancelAutoPromote();
+    const first = nextAutoPromote();
+    if (!first) {
+      return false;
+    }
+
     if (createHistory) pushHistory("auto-promote");
 
-    while (changed) {
-      changed = false;
-      for (const item of topMovableCards()) {
-        if (!canAutoPromote(item.id)) continue;
-        const card = parseCard(item.id);
-        const freshSource = findCard(item.id);
-        if (!freshSource) continue;
-        removeFromSource(freshSource, 1);
-        state.foundations[card.suit] = card.rank;
-        promoted = true;
-        changed = true;
+    const promoteNext = () => {
+      autoPromoteTimer = null;
+      if (!options.autoPromote) return;
+      const item = nextAutoPromote();
+      if (!item) return;
+      removeFromSource(item.source, 1);
+      state.foundations[item.card.suit] = item.card.rank;
+      selected = null;
+      afterChange();
+      if (!state.won && nextAutoPromote()) {
+        autoPromoteTimer = setTimeout(promoteNext, AUTO_PROMOTE_DELAY);
       }
-    }
+    };
 
-    if (!promoted && createHistory) {
-      state.history.pop();
-    }
-    return promoted;
+    autoPromoteTimer = setTimeout(promoteNext, AUTO_PROMOTE_DELAY);
+    return true;
   }
 
   function sourceName(source) {
@@ -1337,6 +1360,7 @@
   }
 
   function undo() {
+    cancelAutoPromote();
     const item = state.history.pop();
     if (!item) return;
     const history = state.history;
@@ -1349,6 +1373,7 @@
   }
 
   function startNewGame(dealNumber, gameNumber) {
+    cancelAutoPromote();
     stopAutoplay(false);
     state = createGame(dealNumber, gameNumber);
     selected = null;
@@ -1429,6 +1454,10 @@
     els.autoPromoteToggle.addEventListener("change", () => {
       options.autoPromote = els.autoPromoteToggle.checked;
       saveOptions();
+      if (!options.autoPromote) {
+        cancelAutoPromote();
+        return;
+      }
       if (options.autoPromote && runAutoPromote(true)) {
         afterChange();
         setStatus("Auto-promoção aplicada.");
