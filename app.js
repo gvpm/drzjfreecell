@@ -1083,6 +1083,18 @@
       if (Date.now() < suppressClickUntil) return;
       onCardClick(id);
     });
+    button.addEventListener("pointerdown", (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      beginDrag(event, id, event, button);
+    }, { passive: false });
+    button.addEventListener("mousedown", (event) => {
+      if (event.button !== 0) return;
+      beginDrag(event, id, event, button);
+    }, { passive: false });
+    button.addEventListener("touchstart", (event) => {
+      const point = pointFromTouch(event);
+      if (point) beginDrag(event, id, point, button);
+    }, { passive: false });
     return button;
   }
 
@@ -1132,7 +1144,7 @@
       );
       slot.dataset.suit = suit;
       slot.dataset.targetType = "foundation";
-      slot.style.gridColumn = String(indexForSuit(suit) + 6);
+      slot.style.gridColumn = String(indexForSuit(suit) + 5);
       const rank = state.foundations[suit];
       if (rank > 0) {
         slot.append(createCardButton(cardId(suit, rank), { type: "foundation", index: 0, cardIndex: 0 }, 0));
@@ -1448,6 +1460,10 @@
     els.table.addEventListener("contextmenu", (event) => event.preventDefault());
     els.table.addEventListener("selectstart", (event) => event.preventDefault());
     els.table.addEventListener("dragstart", (event) => event.preventDefault());
+    document.addEventListener("pointerdown", (event) => {
+      if (!event.target.closest?.(".menu")) els.menu.open = false;
+      if (!event.target.closest?.(".info-menu")) document.querySelector("#infoMenu").open = false;
+    });
     document.addEventListener("pointerdown", onDragPointerStart, { capture: true, passive: false });
     document.addEventListener("mousedown", onDragMouseStart, { capture: true, passive: false });
     document.addEventListener("touchstart", onDragTouchStart, { capture: true, passive: false });

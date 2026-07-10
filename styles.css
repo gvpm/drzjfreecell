@@ -41,39 +41,39 @@ body {
 }
 
 body.night-mode {
-  --felt: #050505;
-  --felt-dark: #000;
-  --felt-light: #2b2b2b;
-  --red: #ff8a8a;
-  background: #000;
+  --felt: #151c2a;
+  --felt-dark: #111827;
+  --felt-light: #2b3546;
+  --red: #ff5f7d;
+  background: #111827;
 }
 
 body.night-mode .app-shell {
   background:
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04), transparent 42%),
-    linear-gradient(135deg, #070707, #000);
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.035), transparent 42%),
+    linear-gradient(135deg, #151c2a, #111827);
 }
 
 body.night-mode .card img {
-  filter: invert(0.78) hue-rotate(180deg) saturate(0.6) brightness(1.18);
+  filter: invert(0.72) hue-rotate(180deg) saturate(0.55) brightness(1.28);
 }
 
 body.night-mode .card-fallback {
-  background: #343434;
-  border-color: #888;
-  color: #ececec;
+  background: #d5dae3;
+  border-color: #222936;
+  color: #111827;
 }
 
 body.night-mode .topbar,
 body.night-mode .status-line,
 body.night-mode .menu-panel,
 body.night-mode .info-panel {
-  background: rgba(0, 0, 0, 0.96);
+  background: rgba(17, 24, 39, 0.94);
 }
 
 body.night-mode .slot {
-  border-color: rgba(170, 170, 170, 0.58);
-  background: rgba(35, 35, 35, 0.72);
+  border-color: rgba(135, 148, 170, 0.58);
+  background: rgba(43, 53, 70, 0.72);
 }
 
 button,
@@ -262,8 +262,8 @@ h1 {
 .top-row {
   display: grid;
   position: relative;
-  grid-template-columns: repeat(4, var(--card-w)) minmax(34px, 1fr) repeat(4, var(--card-w));
-  gap: var(--top-gap);
+  grid-template-columns: repeat(8, var(--card-w));
+  gap: var(--cascade-gap);
   align-items: start;
   width: var(--board-w);
   min-width: var(--board-w);
@@ -593,9 +593,9 @@ h1 {
 
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
-    --card-w: clamp(64px, 9.2dvh, 88px);
-    --stack-gap: clamp(6px, 0.92dvh, 9px);
-    --cascade-gap: clamp(1px, 0.28dvh, 3px);
+    --card-w: clamp(66px, 8.95dvh, 82px);
+    --stack-gap: clamp(5px, 0.72dvh, 8px);
+    --cascade-gap: clamp(2px, 0.44dvh, 4px);
   }
 
   .app-shell {
@@ -611,6 +611,7 @@ h1 {
     padding-right: max(8px, env(safe-area-inset-top));
     padding-bottom: max(5px, env(safe-area-inset-right));
     padding-left: max(8px, env(safe-area-inset-bottom));
+    background: rgba(0, 0, 0, 0.1);
   }
 
   .stats {
