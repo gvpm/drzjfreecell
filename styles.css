@@ -44,7 +44,8 @@ body.night-mode {
   --felt: #050505;
   --felt-dark: #000;
   --felt-light: #2b2b2b;
-  --red: #ff7777;
+  --red: #ff8a8a;
+  background: #000;
 }
 
 body.night-mode .app-shell {
@@ -54,13 +55,25 @@ body.night-mode .app-shell {
 }
 
 body.night-mode .card img {
-  filter: invert(0.88) hue-rotate(180deg) saturate(0.65) brightness(0.9);
+  filter: invert(0.78) hue-rotate(180deg) saturate(0.6) brightness(1.18);
 }
 
 body.night-mode .card-fallback {
-  background: #202020;
-  border-color: #777;
-  color: #ddd;
+  background: #343434;
+  border-color: #888;
+  color: #ececec;
+}
+
+body.night-mode .topbar,
+body.night-mode .status-line,
+body.night-mode .menu-panel,
+body.night-mode .info-panel {
+  background: rgba(0, 0, 0, 0.96);
+}
+
+body.night-mode .slot {
+  border-color: rgba(170, 170, 170, 0.58);
+  background: rgba(35, 35, 35, 0.72);
 }
 
 button,
@@ -356,7 +369,7 @@ h1 {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 200;
+  z-index: 9999;
   pointer-events: none;
   transform: translate3d(-999px, -999px, 0);
 }
@@ -365,6 +378,7 @@ h1 {
   position: absolute;
   left: 0;
   box-shadow: none;
+  opacity: 1;
 }
 
 .drop-ready {
@@ -539,9 +553,9 @@ h1 {
 
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
-    --card-w: clamp(48px, 7.4vw, 68px);
-    --stack-gap: clamp(9px, 2.65vh, 13px);
-    --cascade-gap: clamp(4px, 0.85vw, 7px);
+    --card-w: clamp(58px, 8.7vw, 82px);
+    --stack-gap: clamp(7px, 2.05vh, 10px);
+    --cascade-gap: clamp(2px, 0.5vw, 5px);
   }
 
   .topbar {
@@ -579,9 +593,9 @@ h1 {
 
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
-    --card-w: clamp(50px, 8.2dvh, 64px);
-    --stack-gap: clamp(7px, 1.1dvh, 10px);
-    --cascade-gap: clamp(2px, 0.45dvh, 4px);
+    --card-w: clamp(64px, 9.2dvh, 88px);
+    --stack-gap: clamp(6px, 0.92dvh, 9px);
+    --cascade-gap: clamp(1px, 0.28dvh, 3px);
   }
 
   .app-shell {
@@ -609,15 +623,15 @@ h1 {
 
   .table {
     overflow: hidden;
-    padding-top: 5px;
+    padding-top: 2px;
     padding-right: max(8px, env(safe-area-inset-top));
-    padding-bottom: 10px;
+    padding-bottom: 4px;
     padding-left: max(8px, env(safe-area-inset-bottom));
   }
 
   .top-row {
-    margin-top: 4px;
-    margin-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 4px;
   }
 
   .status-line {

@@ -558,6 +558,7 @@
       document.querySelector(`.card[data-card="${CSS.escape(cardIdValue)}"]`)?.classList.add("dragging");
     });
     createDragGhost(drag.source, owner, point.clientX, point.clientY);
+    setStatus("Arrastando carta...");
     event.preventDefault();
   }
 
@@ -1233,6 +1234,11 @@
         const card = parseCard(id);
         if (move(topSource, { type: "foundation", suit: card.suit }, "foundation")) {
           setStatus(`${card.label} foi para a fundação.`);
+          return;
+        }
+        const freeIndex = state.freecells.findIndex((value) => !value);
+        if (freeIndex !== -1 && move(topSource, { type: "freecell", index: freeIndex }, "freecell")) {
+          setStatus(`${card.label} foi para a célula livre.`);
           return;
         }
       }

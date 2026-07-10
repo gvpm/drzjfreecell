@@ -1,4 +1,4 @@
-const CACHE_NAME = "drzj-freecell-v9";
+const CACHE_NAME = "drzj-freecell-v10";
 const ASSETS = [
   "./",
   "./index.html",
