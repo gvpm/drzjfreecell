@@ -490,6 +490,12 @@
     document.querySelectorAll(".drop-ready").forEach((node) => node.classList.remove("drop-ready"));
   }
 
+  function cleanupDragArtifacts() {
+    document.querySelectorAll(".drag-ghost").forEach((node) => node.remove());
+    document.querySelectorAll(".dragging").forEach((node) => node.classList.remove("dragging"));
+    clearDropReady();
+  }
+
   function updateDragGhost(clientX, clientY) {
     if (!drag?.ghost) return;
     drag.ghost.style.transform = `translate3d(${clientX - drag.offsetX}px, ${clientY - drag.offsetY}px, 0)`;
@@ -528,9 +534,6 @@
     if (source.type === "cascade" && clickedIndex > 0) {
       source.cardIndex += clickedIndex;
     }
-    if (source.type === "cascade" && !isDescendingAlternating(sourceCards(source))) {
-      return;
-    }
     drag = {
       id,
       source,
@@ -551,14 +554,6 @@
     } catch {
       // Pointer capture is a convenience; mouse/touch fallbacks keep drag working without it.
     }
-    drag.active = true;
-    selected = drag.source;
-    renderSelection();
-    sourceCards(drag.source).forEach((cardIdValue) => {
-      document.querySelector(`.card[data-card="${CSS.escape(cardIdValue)}"]`)?.classList.add("dragging");
-    });
-    createDragGhost(drag.source, owner, point.clientX, point.clientY);
-    setStatus("Arrastando carta...");
     event.preventDefault();
   }
 
@@ -603,12 +598,13 @@
         document.querySelector(`.card[data-card="${CSS.escape(id)}"]`)?.classList.add("dragging");
       });
       createDragGhost(drag.source, originCard, point.clientX, point.clientY);
-      setStatus("Arraste ate o destino.");
+      setStatus("Arrastando carta...");
     }
 
     if (!drag.active) return;
     originalEvent.preventDefault();
     updateDragGhost(point.clientX, point.clientY);
+    if (!drag.ghost) return;
     drag.ghost.hidden = true;
     const element = document.elementFromPoint(point.clientX, point.clientY);
     drag.ghost.hidden = false;
@@ -655,9 +651,7 @@
       const y = Number.isFinite(point.clientY) ? point.clientY : drag.currentY;
       const distance = Math.hypot(x - drag.startX, y - drag.startY);
       if (distance < 8) {
-        drag.ghost?.remove();
-        clearDropReady();
-        document.querySelectorAll(".dragging").forEach((node) => node.classList.remove("dragging"));
+        cleanupDragArtifacts();
         selected = null;
         renderSelection();
         const clickedId = drag.id;
@@ -666,12 +660,14 @@
         return;
       }
       suppressClickUntil = Date.now() + 350;
+      if (!drag.ghost) {
+        drag = null;
+        return;
+      }
       drag.ghost.hidden = true;
       const element = document.elementFromPoint(x, y);
       const target = targetFromElement(element);
-      drag.ghost.remove();
-      clearDropReady();
-      document.querySelectorAll(".dragging").forEach((node) => node.classList.remove("dragging"));
+      cleanupDragArtifacts();
       if (target && move(source, target, "drag")) {
         setStatus("Movimento feito.");
       } else {
@@ -1050,7 +1046,7 @@
 
   function cardAsset(id) {
     const card = parseCard(id);
-    return `assets/decks/${options.deck}/${card.rank}${card.suit}.svg`;
+    return `assets/decks/${options.deck}/${card.rank}${card.suit}.svg?v=14`;
   }
 
   function createCardButton(id, source, top) {
@@ -1068,7 +1064,7 @@
 
     const fallback = document.createElement("span");
     fallback.className = "card-fallback";
-    fallback.innerHTML = `<span class="card-corner"><span>${RANKS[card.rank]}</span><span>${SUIT_SYMBOLS[card.suit]}</span></span><span class="card-center">${SUIT_SYMBOLS[card.suit]}</span><span class="card-corner bottom"><span>${RANKS[card.rank]}</span><span>${SUIT_SYMBOLS[card.suit]}</span></span>`;
+    fallback.innerHTML = `<span class="card-corner"><span>${RANKS[card.rank]}${SUIT_SYMBOLS[card.suit]}</span></span><span class="card-center">${SUIT_SYMBOLS[card.suit]}</span><span class="card-corner bottom"><span>${RANKS[card.rank]}${SUIT_SYMBOLS[card.suit]}</span></span>`;
     button.append(fallback);
 
     const img = document.createElement("img");
@@ -1083,18 +1079,6 @@
       if (Date.now() < suppressClickUntil) return;
       onCardClick(id);
     });
-    button.addEventListener("pointerdown", (event) => {
-      if (event.button !== undefined && event.button !== 0) return;
-      beginDrag(event, id, event, button);
-    }, { passive: false });
-    button.addEventListener("mousedown", (event) => {
-      if (event.button !== 0) return;
-      beginDrag(event, id, event, button);
-    }, { passive: false });
-    button.addEventListener("touchstart", (event) => {
-      const point = pointFromTouch(event);
-      if (point) beginDrag(event, id, point, button);
-    }, { passive: false });
     return button;
   }
 
@@ -1187,6 +1171,7 @@
   }
 
   function render() {
+    if (!drag) cleanupDragArtifacts();
     renderTop();
     renderCascades();
     renderSelection();

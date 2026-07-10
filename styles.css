@@ -422,9 +422,9 @@ h1 {
   position: absolute;
   left: 7%;
   top: 4%;
-  display: grid;
+  display: block;
   justify-items: center;
-  font-size: calc(var(--card-w) * 0.23);
+  font-size: calc(var(--card-w) * 0.2);
   line-height: 0.95;
 }
 
@@ -593,8 +593,8 @@ h1 {
 
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
-    --card-w: clamp(66px, 8.95dvh, 82px);
-    --stack-gap: clamp(5px, 0.72dvh, 8px);
+    --card-w: clamp(62px, 8.45dvh, 78px);
+    --stack-gap: clamp(4px, 0.54dvh, 6px);
     --cascade-gap: clamp(2px, 0.44dvh, 4px);
   }
 

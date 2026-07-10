@@ -34,9 +34,11 @@ function pipPositions(rank) {
 
 function corner(rank, suit, rotate = false) {
   const transform = rotate ? "translate(240 336) rotate(180)" : "";
+  const rankLabel = ranks[rank];
+  const suitX = rankLabel === "10" ? 54 : 39;
   return `<g transform="${transform}">
-    <text x="14" y="38" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="800" fill="${suit.color}">${ranks[rank]}</text>
-    <text x="17" y="68" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="${suit.color}">${suit.symbol}</text>
+    <text x="14" y="39" font-family="Arial, Helvetica, sans-serif" font-size="${rankLabel === "10" ? 31 : 34}" font-weight="900" fill="${suit.color}">${rankLabel}</text>
+    <text x="${suitX}" y="39" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
   </g>`;
 }
 
