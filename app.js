@@ -31,6 +31,7 @@
     freecells: document.querySelector("#freecells"),
     foundations: document.querySelector("#foundations"),
     cascades: document.querySelector("#cascades"),
+    table: document.querySelector("#table"),
     statusLine: document.querySelector("#statusLine"),
     quickUndoBtn: document.querySelector("#quickUndoBtn"),
     slowerBtn: document.querySelector("#slowerBtn"),
@@ -527,6 +528,7 @@
 
   function beginDrag(event, id, point = event, owner = event.currentTarget) {
     if (drag) return;
+    if (event.cancelable) event.preventDefault();
     const source = findCard(id);
     if (!source) return;
     const cards = sourceCards(source);
@@ -554,7 +556,6 @@
     } catch {
       // Pointer capture is a convenience; mouse/touch fallbacks keep drag working without it.
     }
-    event.preventDefault();
   }
 
   function cardFromEvent(event) {
@@ -1079,6 +1080,21 @@
       if (Date.now() < suppressClickUntil) return;
       onCardClick(id);
     });
+    if (window.PointerEvent) {
+      button.addEventListener("pointerdown", (event) => {
+        if (event.button !== undefined && event.button !== 0) return;
+        beginDrag(event, id, event, button);
+      }, { passive: false });
+    } else {
+      button.addEventListener("mousedown", (event) => {
+        if (event.button !== 0) return;
+        beginDrag(event, id, event, button);
+      }, { passive: false });
+      button.addEventListener("touchstart", (event) => {
+        const point = pointFromTouch(event);
+        if (point) beginDrag(event, id, point, button);
+      }, { passive: false });
+    }
     return button;
   }
 
@@ -1449,17 +1465,17 @@
       if (!event.target.closest?.(".menu")) els.menu.open = false;
       if (!event.target.closest?.(".info-menu")) document.querySelector("#infoMenu").open = false;
     });
-    document.addEventListener("pointerdown", onDragPointerStart, { capture: true, passive: false });
-    document.addEventListener("mousedown", onDragMouseStart, { capture: true, passive: false });
-    document.addEventListener("touchstart", onDragTouchStart, { capture: true, passive: false });
-    window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
-    window.addEventListener("pointerup", endDrag, { capture: true });
-    window.addEventListener("pointercancel", endDrag, { capture: true });
-    window.addEventListener("mousemove", onMouseMove, { capture: true, passive: false });
-    window.addEventListener("mouseup", endDrag, { capture: true });
-    window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
-    window.addEventListener("touchend", endDrag, { capture: true, passive: false });
-    window.addEventListener("touchcancel", endDrag, { capture: true, passive: false });
+    if (window.PointerEvent) {
+      window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
+      window.addEventListener("pointerup", endDrag, { capture: true });
+      window.addEventListener("pointercancel", endDrag, { capture: true });
+    } else {
+      window.addEventListener("mousemove", onMouseMove, { capture: true, passive: false });
+      window.addEventListener("mouseup", endDrag, { capture: true });
+      window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
+      window.addEventListener("touchend", endDrag, { capture: true, passive: false });
+      window.addEventListener("touchcancel", endDrag, { capture: true, passive: false });
+    }
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         saveGame();
