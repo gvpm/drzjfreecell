@@ -494,6 +494,18 @@
     document.querySelectorAll(".drop-ready").forEach((node) => node.classList.remove("drop-ready"));
   }
 
+  function cssLength(name, fallback) {
+    const probe = document.createElement("div");
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
+    probe.style.pointerEvents = "none";
+    probe.style.width = `var(${name})`;
+    document.body.append(probe);
+    const value = Number.parseFloat(getComputedStyle(probe).width);
+    probe.remove();
+    return Number.isFinite(value) ? value : fallback;
+  }
+
   function cleanupDragArtifacts() {
     document.querySelectorAll(".drag-ghost").forEach((node) => node.remove());
     document.querySelectorAll(".dragging").forEach((node) => node.classList.remove("dragging"));
@@ -502,7 +514,9 @@
 
   function updateDragGhost(clientX, clientY) {
     if (!drag?.ghost) return;
-    drag.ghost.style.transform = `translate3d(${clientX - drag.offsetX}px, ${clientY - drag.offsetY}px, 0)`;
+    const rotatedBoard = window.matchMedia("(orientation: portrait) and (max-width: 1200px)").matches;
+    const rotation = rotatedBoard ? " rotate(90deg)" : "";
+    drag.ghost.style.transform = `translate3d(${clientX - drag.offsetX}px, ${clientY - drag.offsetY}px, 0)${rotation}`;
   }
 
   function createDragGhost(source, originCard, clientX, clientY) {
@@ -510,7 +524,7 @@
     const ghost = document.createElement("div");
     ghost.className = "drag-ghost";
     const rect = originCard.getBoundingClientRect();
-    const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stack-gap")) || 28;
+    const gap = cssLength("--stack-gap", 28);
 
     cards.forEach((id, index) => {
       const node = document.querySelector(`.card[data-card="${CSS.escape(id)}"]`);
@@ -1178,8 +1192,8 @@
 
   function renderCascades() {
     els.cascades.innerHTML = "";
-    const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--stack-gap")) || 28;
-    const cardHeight = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--card-h")) || 120;
+    const gap = cssLength("--stack-gap", 28);
+    const cardHeight = cssLength("--card-h", 120);
 
     state.cascades.forEach((pile, pileIndex) => {
       const column = makeTargetElement(
