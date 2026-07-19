@@ -538,12 +538,14 @@
 
     document.body.append(ghost);
     const rotatedBoard = window.matchMedia("(orientation: portrait) and (max-width: 1200px)").matches;
-    // A 90deg rotation around the top-left makes that origin appear at the
-    // visual top-right of the card. Use rect.right on rotated mobile boards
-    // so the ghost stays under the pointer instead of jumping by one card.
-    drag.offsetX = clientX - (rotatedBoard ? rect.right : rect.left);
-    drag.offsetY = clientY - rect.top;
     drag.ghost = ghost;
+    const rotation = rotatedBoard ? " rotate(90deg)" : "";
+    ghost.style.transform = `translate3d(0, 0, 0)${rotation}`;
+    const ghostCardRect = ghost.querySelector(".card")?.getBoundingClientRect();
+    const translateX = ghostCardRect ? rect.left - ghostCardRect.left : rect.left;
+    const translateY = ghostCardRect ? rect.top - ghostCardRect.top : rect.top;
+    drag.offsetX = clientX - translateX;
+    drag.offsetY = clientY - translateY;
     updateDragGhost(clientX, clientY);
   }
 
