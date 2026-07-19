@@ -2,6 +2,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const traditionalDir = new URL("./assets/decks/traditional/", import.meta.url);
 const juDir = new URL("./assets/decks/ju/", import.meta.url);
+const traditionalIosDir = new URL("./assets/decks/traditional-ios/", import.meta.url);
+const juIosDir = new URL("./assets/decks/ju-ios/", import.meta.url);
 const suits = {
   S: { symbol: "♠", color: "#0a0a0a" },
   H: { symbol: "♥", color: "#e11313" },
@@ -32,21 +34,25 @@ function pipPositions(rank) {
   return map[rank] || [];
 }
 
-function corner(rank, suit, rotate = false) {
+function suitStroke(width, color) {
+  return width > 0 ? ` stroke="${color}" stroke-width="${width}" stroke-linejoin="round" paint-order="stroke fill"` : "";
+}
+
+function corner(rank, suit, rotate = false, strokeWidth = 0) {
   const transform = rotate ? "translate(240 336) rotate(180)" : "";
   const rankLabel = ranks[rank];
   return `<g transform="${transform}">
     <text x="10" y="43" font-family="Arial, Helvetica, sans-serif" font-size="${rankLabel === "10" ? 38 : 43}" font-weight="900" fill="${suit.color}">${rankLabel}</text>
-    <text x="28" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
+    <text x="28" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" fill="${suit.color}"${suitStroke(strokeWidth, suit.color)}>${suit.symbol}</text>
   </g>`;
 }
 
-function face(rank, suit) {
+function face(rank, suit, strokeWidth = 0) {
   const title = rank === 11 ? "J" : rank === 12 ? "Q" : "K";
   return `<g transform="translate(120 170)">
-    <text x="0" y="-128" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
+    <text x="0" y="-128" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="${suit.color}"${suitStroke(strokeWidth, suit.color)}>${suit.symbol}</text>
     <text x="0" y="14" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="88" font-weight="900" fill="${suit.color}">${title}</text>
-    <text x="0" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
+    <text x="0" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="${suit.color}"${suitStroke(strokeWidth, suit.color)}>${suit.symbol}</text>
   </g>`;
 }
 
@@ -63,17 +69,17 @@ function cardBackground(deck) {
   <rect x="8" y="8" width="224" height="320" rx="9" fill="#fff" opacity="0.28"/>`;
 }
 
-function cardSvg(rank, suitCode, deck = "traditional") {
+function cardSvg(rank, suitCode, deck = "traditional", strokeWidth = 0) {
   const suit = suits[suitCode];
   const pips = rank <= 10
-    ? pipPositions(rank).map(([x, y, dir]) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${rank === 1 ? 106 : 52}" font-weight="900" fill="${suit.color}" transform="rotate(${dir < 0 ? 180 : 0} ${x} ${y})">${suit.symbol}</text>`).join("\n")
-    : face(rank, suit);
+    ? pipPositions(rank).map(([x, y, dir]) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${rank === 1 ? 106 : 52}" font-weight="900" fill="${suit.color}"${suitStroke(strokeWidth, suit.color)} transform="rotate(${dir < 0 ? 180 : 0} ${x} ${y})">${suit.symbol}</text>`).join("\n")
+    : face(rank, suit, strokeWidth);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 336" role="img" aria-label="${ranks[rank]} ${suit.symbol}">
   <rect x="3" y="3" width="234" height="330" rx="13" fill="#fff" stroke="#080808" stroke-width="6"/>
   ${cardBackground(deck)}
-  ${corner(rank, suit)}
-  ${corner(rank, suit, true)}
+  ${corner(rank, suit, false, strokeWidth)}
+  ${corner(rank, suit, true, strokeWidth)}
   ${pips}
 </svg>
 `;
@@ -94,11 +100,11 @@ function backSvg() {
 `;
 }
 
-async function writeDeck(outDir, name, deck) {
+async function writeDeck(outDir, name, deck, strokeWidth = 0) {
   await mkdir(outDir, { recursive: true });
   for (const suit of Object.keys(suits)) {
     for (let rank = 1; rank <= 13; rank += 1) {
-      await writeFile(new URL(`${rank}${suit}.svg`, outDir), cardSvg(rank, suit, deck));
+      await writeFile(new URL(`${rank}${suit}.svg`, outDir), cardSvg(rank, suit, deck, strokeWidth));
     }
   }
   await writeFile(new URL("back.svg", outDir), backSvg());
@@ -107,3 +113,5 @@ async function writeDeck(outDir, name, deck) {
 
 await writeDeck(traditionalDir, "Tradicional", "traditional");
 await writeDeck(juDir, "Ju", "ju");
+await writeDeck(traditionalIosDir, "Tradicional iOS", "traditional", 1.35);
+await writeDeck(juIosDir, "Ju iOS", "ju", 1.35);

@@ -15,8 +15,11 @@
   const SUIT_SYMBOLS = { S: "♠", H: "♥", D: "♦", C: "♣" };
   const RANKS = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
   const RED_SUITS = new Set(["H", "D"]);
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
   const els = {
+    themeColor: document.querySelector('meta[name="theme-color"]'),
     timer: document.querySelector("#timer"),
     dealNumber: document.querySelector("#dealNumber"),
     cardsLeft: document.querySelector("#cardsLeft"),
@@ -231,14 +234,19 @@
 
   function loadOptions() {
     try {
-      const loaded = { autoPromote: true, nightMode: false, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) || "{}") };
+      const loaded = { autoPromote: true, nightMode: true, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) || "{}") };
+      if (loaded.nightModeDefaultVersion !== 1) {
+        loaded.nightMode = true;
+        loaded.nightModeDefaultVersion = 1;
+        localStorage.setItem(OPTIONS_KEY, JSON.stringify(loaded));
+      }
       if (!["traditional", "ju"].includes(loaded.deck)) loaded.deck = "traditional";
       if (!["random", "level1", "level2", "level3"].includes(loaded.difficulty)) loaded.difficulty = "random";
       if (!Number.isInteger(loaded.autoplaySpeed)) loaded.autoplaySpeed = 2;
       loaded.autoplaySpeed = Math.max(0, Math.min(AUTOPLAY_SPEEDS.length - 1, loaded.autoplaySpeed));
       return loaded;
     } catch {
-      return { autoPromote: true, nightMode: false, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2 };
+      return { autoPromote: true, nightMode: true, nightModeDefaultVersion: 1, deck: "traditional", difficulty: "random", autoplayUnlocked: false, autoplaySpeed: 2 };
     }
   }
 
@@ -1090,7 +1098,8 @@
 
   function cardAsset(id) {
     const card = parseCard(id);
-    return `assets/decks/${options.deck}/${card.rank}${card.suit}.svg?v=24`;
+    const deckDirectory = IS_IOS ? `${options.deck}-ios` : options.deck;
+    return `assets/decks/${deckDirectory}/${card.rank}${card.suit}.svg?v=25`;
   }
 
   function createCardButton(id, source, top) {
@@ -1257,6 +1266,7 @@
     els.autoPromoteToggle.checked = options.autoPromote;
     els.nightModeToggle.checked = !!options.nightMode;
     document.body.classList.toggle("night-mode", !!options.nightMode);
+    els.themeColor?.setAttribute("content", options.nightMode ? "#111827" : "#007600");
     els.difficultySelect.value = difficultyLevel();
     els.deckSelect.value = options.deck;
     updateTimer();
@@ -1535,6 +1545,7 @@
   }
 
   function init() {
+    document.body.classList.toggle("ios", IS_IOS);
     state = loadGame() || createGame();
     wireEvents();
     render();

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 336" role="img" aria-label="K ♥">
+  <rect x="3" y="3" width="234" height="330" rx="13" fill="#fff" stroke="#080808" stroke-width="6"/>
+  <rect x="8" y="8" width="224" height="320" rx="9" fill="#fff"/>
+  <g transform="">
+    <text x="10" y="43" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="900" fill="#e11313">K</text>
+    <text x="28" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" fill="#e11313" stroke="#e11313" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke fill">♥</text>
+  </g>
+  <g transform="translate(240 336) rotate(180)">
+    <text x="10" y="43" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="900" fill="#e11313">K</text>
+    <text x="28" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" fill="#e11313" stroke="#e11313" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke fill">♥</text>
+  </g>
+  <g transform="translate(120 170)">
+    <text x="0" y="-128" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#e11313" stroke="#e11313" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke fill">♥</text>
+    <text x="0" y="14" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="88" font-weight="900" fill="#e11313">K</text>
+    <text x="0" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="#e11313" stroke="#e11313" stroke-width="1.35" stroke-linejoin="round" paint-order="stroke fill">♥</text>
+  </g>
+</svg>
