@@ -16,7 +16,7 @@ function pipPositions(rank) {
   const c = 120;
   const l = 82;
   const r = 158;
-  const rows = { a: 32, b: 92, c: 154, d: 190, e: 244, f: 304 };
+  const rows = { a: 42, b: 100, c: 154, d: 190, e: 236, f: 294 };
   const map = {
     1: [[c, 170, 2.05]],
     2: [[c, rows.a, 1], [c, rows.f, -1]],
@@ -44,7 +44,7 @@ function corner(rank, suit, rotate = false) {
 function face(rank, suit) {
   const title = rank === 11 ? "J" : rank === 12 ? "Q" : "K";
   return `<g transform="translate(120 170)">
-    <text x="0" y="-138" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
+    <text x="0" y="-128" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
     <text x="0" y="14" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="88" font-weight="900" fill="${suit.color}">${title}</text>
     <text x="0" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="${suit.color}">${suit.symbol}</text>
   </g>`;
@@ -66,7 +66,7 @@ function cardBackground(deck) {
 function cardSvg(rank, suitCode, deck = "traditional") {
   const suit = suits[suitCode];
   const pips = rank <= 10
-    ? pipPositions(rank).map(([x, y, dir]) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${rank === 1 ? 116 : 60}" font-weight="900" fill="${suit.color}" transform="rotate(${dir < 0 ? 180 : 0} ${x} ${y})">${suit.symbol}</text>`).join("\n")
+    ? pipPositions(rank).map(([x, y, dir]) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${rank === 1 ? 106 : 52}" font-weight="900" fill="${suit.color}" transform="rotate(${dir < 0 ? 180 : 0} ${x} ${y})">${suit.symbol}</text>`).join("\n")
     : face(rank, suit);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 336" role="img" aria-label="${ranks[rank]} ${suit.symbol}">

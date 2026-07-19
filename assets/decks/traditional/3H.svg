@@ -9,7 +9,7 @@
     <text x="10" y="43" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="900" fill="#e11313">3</text>
     <text x="28" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" fill="#e11313">♥</text>
   </g>
-  <text x="120" y="32" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="#e11313" transform="rotate(0 120 32)">♥</text>
-<text x="120" y="170" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="#e11313" transform="rotate(0 120 170)">♥</text>
-<text x="120" y="304" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="#e11313" transform="rotate(180 120 304)">♥</text>
+  <text x="120" y="42" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#e11313" transform="rotate(0 120 42)">♥</text>
+<text x="120" y="170" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#e11313" transform="rotate(0 120 170)">♥</text>
+<text x="120" y="294" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#e11313" transform="rotate(180 120 294)">♥</text>
 </svg>

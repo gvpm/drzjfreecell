@@ -511,7 +511,7 @@ h1 {
 @media (max-width: 900px) {
   :root {
     --card-w: max(46px, min(11.55dvw, 24dvh));
-    --stack-gap: max(9px, calc(var(--card-w) * 0.165));
+    --stack-gap: max(9px, calc(var(--card-w) * 0.18));
     --cascade-gap: max(3px, 0.45dvw);
   }
 
@@ -553,7 +553,7 @@ h1 {
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
     --card-w: max(58px, min(11.55dvw, 24dvh));
-    --stack-gap: max(9px, calc(var(--card-w) * 0.165));
+    --stack-gap: max(9px, calc(var(--card-w) * 0.18));
     --cascade-gap: max(2px, 0.45dvw);
   }
 
@@ -593,7 +593,7 @@ h1 {
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
     --card-w: max(62px, min(11.55dvh, 24dvw));
-    --stack-gap: max(9px, calc(var(--card-w) * 0.16));
+    --stack-gap: max(9px, calc(var(--card-w) * 0.18));
     --cascade-gap: max(2px, 0.45dvh);
   }
 
