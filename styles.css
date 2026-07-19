@@ -2,11 +2,11 @@
   --felt: #008000;
   --felt-dark: #006d00;
   --felt-light: #11ad11;
-  --card-w: clamp(58px, 10.6vw, 132px);
+  --card-w: max(52px, min(11.55dvw, 24dvh));
   --card-h: calc(var(--card-w) * 1.4);
-  --stack-gap: clamp(15px, 2.9vw, 30px);
+  --stack-gap: max(10px, calc(var(--card-w) * 0.16));
   --top-gap: clamp(4px, 0.7vw, 9px);
-  --cascade-gap: clamp(6px, 1.6vw, 22px);
+  --cascade-gap: max(3px, 0.45dvw);
   --board-w: calc((var(--card-w) * 8) + (var(--cascade-gap) * 7));
   --black: #111;
   --red: #e61818;
@@ -267,7 +267,6 @@ h1 {
   align-items: start;
   width: var(--board-w);
   min-width: var(--board-w);
-  max-width: 1120px;
   margin: clamp(2px, 0.8vh, 10px) auto clamp(8px, 1.8vh, 20px);
 }
 
@@ -331,7 +330,6 @@ h1 {
   align-items: start;
   width: var(--board-w);
   min-width: var(--board-w);
-  max-width: 1120px;
   margin: 0 auto;
   padding-bottom: 36px;
 }
@@ -512,9 +510,9 @@ h1 {
 
 @media (max-width: 900px) {
   :root {
-    --card-w: clamp(46px, 12.4vw, 70px);
-    --stack-gap: clamp(10px, 2.35vw, 14px);
-    --cascade-gap: clamp(4px, 1.05vw, 8px);
+    --card-w: max(46px, min(11.55dvw, 24dvh));
+    --stack-gap: max(9px, calc(var(--card-w) * 0.16));
+    --cascade-gap: max(3px, 0.45dvw);
   }
 
   .topbar {
@@ -554,9 +552,9 @@ h1 {
 
 @media (max-height: 430px) and (orientation: landscape) {
   :root {
-    --card-w: clamp(58px, 8.7vw, 82px);
-    --stack-gap: clamp(9px, 2.45vh, 13px);
-    --cascade-gap: clamp(2px, 0.5vw, 5px);
+    --card-w: max(58px, min(11.55dvw, 24dvh));
+    --stack-gap: max(9px, calc(var(--card-w) * 0.14));
+    --cascade-gap: max(2px, 0.45dvw);
   }
 
   .topbar {
@@ -594,9 +592,9 @@ h1 {
 
 @media (orientation: portrait) and (max-width: 1200px) {
   :root {
-    --card-w: clamp(62px, 8.45dvh, 78px);
-    --stack-gap: clamp(9px, 1.35dvh, 13px);
-    --cascade-gap: clamp(2px, 0.44dvh, 4px);
+    --card-w: max(62px, min(11.55dvh, 24dvw));
+    --stack-gap: max(9px, calc(var(--card-w) * 0.14));
+    --cascade-gap: max(2px, 0.45dvh);
   }
 
   .app-shell {
