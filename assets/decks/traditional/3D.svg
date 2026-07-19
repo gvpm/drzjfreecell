@@ -2,14 +2,14 @@
   <rect x="3" y="3" width="234" height="330" rx="13" fill="#fff" stroke="#080808" stroke-width="6"/>
   <rect x="8" y="8" width="224" height="320" rx="9" fill="#fff"/>
   <g transform="">
-    <text x="12" y="42" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="900" fill="#e11313">3</text>
-    <text x="43" y="42" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="900" fill="#e11313">♦</text>
+    <text x="10" y="43" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="900" fill="#e11313">3</text>
+    <text x="28" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" fill="#e11313">♦</text>
   </g>
   <g transform="translate(240 336) rotate(180)">
-    <text x="12" y="42" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="900" fill="#e11313">3</text>
-    <text x="43" y="42" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="900" fill="#e11313">♦</text>
+    <text x="10" y="43" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="900" fill="#e11313">3</text>
+    <text x="28" y="72" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" fill="#e11313">♦</text>
   </g>
-  <text x="120" y="82" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#e11313" transform="rotate(0 120 82)">♦</text>
-<text x="120" y="170" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#e11313" transform="rotate(0 120 170)">♦</text>
-<text x="120" y="262" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" fill="#e11313" transform="rotate(180 120 262)">♦</text>
+  <text x="120" y="32" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="#e11313" transform="rotate(0 120 32)">♦</text>
+<text x="120" y="170" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="#e11313" transform="rotate(0 120 170)">♦</text>
+<text x="120" y="304" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="60" font-weight="900" fill="#e11313" transform="rotate(180 120 304)">♦</text>
 </svg>
