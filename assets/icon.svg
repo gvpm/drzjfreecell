@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="108" fill="#007600"/>
-  <rect x="132" y="82" width="248" height="348" rx="26" fill="#fbfbf7" stroke="#111" stroke-width="14"/>
-  <text x="172" y="178" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="900" fill="#e61818">A</text>
-  <text x="256" y="304" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="118" font-weight="900" fill="#e61818">♥</text>
-  <text x="340" y="390" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="900" fill="#e61818" transform="rotate(180 340 390)">A</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="drzjFreeCell">
+  <defs>
+    <radialGradient id="night" cx="50%" cy="34%" r="72%">
+      <stop offset="0" stop-color="#263247"/>
+      <stop offset="1" stop-color="#111827"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="#111827"/>
+  <rect x="28" y="28" width="456" height="456" rx="100" fill="url(#night)"/>
+  <rect x="132" y="82" width="248" height="348" rx="26" fill="#c2c8d2" stroke="#e5e7eb" stroke-width="14"/>
+  <text x="172" y="178" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="900" fill="#ff5f7d">A</text>
+  <text x="256" y="304" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="118" font-weight="900" fill="#ff5f7d">♥</text>
+  <g transform="rotate(180 256 256)">
+    <text x="172" y="178" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="900" fill="#ff5f7d">A</text>
+  </g>
 </svg>

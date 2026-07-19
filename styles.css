@@ -109,7 +109,7 @@ button,
 }
 
 .topbar {
-  display: grid;
+  display: none;
   grid-row: 2;
   grid-template-columns: auto 1fr auto auto auto;
   align-items: center;
@@ -117,6 +117,53 @@ button,
   padding: 5px max(8px, env(safe-area-inset-right)) max(5px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.toolbar-toggle {
+  display: grid;
+  position: fixed;
+  left: max(10px, env(safe-area-inset-left));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 65;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  padding: 0;
+  background: rgba(17, 24, 39, 0.92);
+  color: #fff;
+  box-shadow: var(--shadow);
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+body.toolbar-open .topbar {
+  display: grid;
+}
+
+body.toolbar-open .toolbar-toggle {
+  bottom: max(58px, calc(48px + env(safe-area-inset-bottom)));
+}
+
+.quick-undo,
+.menu summary,
+.info-menu summary {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.quick-undo span,
+.menu summary span,
+.info-menu summary span {
+  display: block;
+  line-height: 1;
 }
 
 .quick-actions {
@@ -654,4 +701,10 @@ h1 {
   .status-line {
     display: none;
   }
+}
+
+.quick-undo,
+.menu summary,
+.info-menu summary {
+  padding: 0;
 }

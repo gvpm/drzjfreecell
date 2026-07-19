@@ -20,6 +20,7 @@
 
   const els = {
     themeColor: document.querySelector('meta[name="theme-color"]'),
+    toolbarToggle: document.querySelector("#toolbarToggle"),
     timer: document.querySelector("#timer"),
     dealNumber: document.querySelector("#dealNumber"),
     cardsLeft: document.querySelector("#cardsLeft"),
@@ -1446,6 +1447,13 @@
   }
 
   function wireEvents() {
+    els.toolbarToggle.addEventListener("click", () => {
+      const open = document.body.classList.toggle("toolbar-open");
+      els.toolbarToggle.setAttribute("aria-expanded", String(open));
+      els.toolbarToggle.setAttribute("aria-label", open ? "Fechar barra do jogo" : "Abrir barra do jogo");
+      els.toolbarToggle.querySelector("span").textContent = open ? "×" : "☰";
+      renderSoon();
+    });
     els.menuSummary.addEventListener("pointerdown", () => {
       longPressTriggered = false;
       clearTimeout(longPressTimer);
@@ -1523,6 +1531,15 @@
     document.addEventListener("pointerdown", (event) => {
       if (!event.target.closest?.(".menu")) els.menu.open = false;
       if (!event.target.closest?.(".info-menu")) document.querySelector("#infoMenu").open = false;
+      if (document.body.classList.contains("toolbar-open")
+        && !event.target.closest?.(".topbar")
+        && !event.target.closest?.(".toolbar-toggle")) {
+        document.body.classList.remove("toolbar-open");
+        els.toolbarToggle.setAttribute("aria-expanded", "false");
+        els.toolbarToggle.setAttribute("aria-label", "Abrir barra do jogo");
+        els.toolbarToggle.querySelector("span").textContent = "☰";
+        renderSoon();
+      }
     });
     if (window.PointerEvent) {
       window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
