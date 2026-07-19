@@ -32,6 +32,10 @@ body {
   user-select: none;
 }
 
+html {
+  background: #000;
+}
+
 body {
   min-height: 100dvh;
   overflow: hidden;
@@ -55,12 +59,12 @@ body.night-mode .app-shell {
 }
 
 body.night-mode .card img {
-  filter: invert(0.72) hue-rotate(180deg) saturate(0.55) brightness(1.28);
+  filter: invert(0.72) hue-rotate(180deg) saturate(0.55) brightness(1.14);
 }
 
 body.night-mode .card-fallback {
-  background: #d5dae3;
-  border-color: #222936;
+  background: #c2c8d2;
+  border-color: #171d28;
   color: #111827;
 }
 

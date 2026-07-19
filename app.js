@@ -1266,7 +1266,7 @@
     els.autoPromoteToggle.checked = options.autoPromote;
     els.nightModeToggle.checked = !!options.nightMode;
     document.body.classList.toggle("night-mode", !!options.nightMode);
-    els.themeColor?.setAttribute("content", options.nightMode ? "#111827" : "#007600");
+    els.themeColor?.setAttribute("content", "#000000");
     els.difficultySelect.value = difficultyLevel();
     els.deckSelect.value = options.deck;
     updateTimer();
