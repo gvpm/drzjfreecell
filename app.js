@@ -537,7 +537,11 @@
     });
 
     document.body.append(ghost);
-    drag.offsetX = clientX - rect.left;
+    const rotatedBoard = window.matchMedia("(orientation: portrait) and (max-width: 1200px)").matches;
+    // A 90deg rotation around the top-left makes that origin appear at the
+    // visual top-right of the card. Use rect.right on rotated mobile boards
+    // so the ghost stays under the pointer instead of jumping by one card.
+    drag.offsetX = clientX - (rotatedBoard ? rect.right : rect.left);
     drag.offsetY = clientY - rect.top;
     drag.ghost = ghost;
     updateDragGhost(clientX, clientY);
